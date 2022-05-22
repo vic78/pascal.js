@@ -4,7 +4,7 @@ import { RuntimeError } from '../Errors/RuntimeError';
 
 export class BaseIO
 {
-    constructor(fileName, printer)
+    constructor(printer)
     {
         this.errorsDescription = new ErrorsDescription();
 
