@@ -1,6 +1,7 @@
 
 import { FileIO } from '../IO/FileIO';
-import { ConsoleOutput } from '../IO/ConsoleOutput';
+import { StringIO } from '../IO/StringIO';
+import { ConsoleOutput } from '../IO/Output/ConsoleOutput';
 import { LexicalAnalyzer } from '../LexicalAnalyzer/LexicalAnalyzer';
 import { SyntaxAnalyzer } from '../SyntaxAnalyzer/SyntaxAnalyzer';
 import { Engine } from '../Semantics/Engine';
@@ -9,7 +10,7 @@ import { config } from './demoConfig';
 import { TypesIds } from '../Semantics/Variables/TypesIds';
 export class PascalJs {
     /**
-     * @type Engine  
+     * @type Engine
      */
     engine;
 
@@ -26,7 +27,7 @@ export class PascalJs {
 
         try {
             var fileIO = new FileIO(filePath,
-                new ConsoleOutput()
+                this.config.listingOutput
             );
             var lexicalAnalyzer = new LexicalAnalyzer(fileIO);
             var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
@@ -45,6 +46,27 @@ export class PascalJs {
         return engine;
     }
 
+    runString(programText) {
+
+        try {
+            var fileIO = new StringIO(programText,
+                this.config.listingOutput
+            );
+            var lexicalAnalyzer = new LexicalAnalyzer(fileIO);
+            var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
+            var tree = syntaxAnalyzer.analyze();
+            var engine = new Engine(tree, this.config);
+            engine.run();
+        } catch (e) {
+
+            if (e instanceof RuntimeError) {
+                this.error = e;
+            } else throw e;
+        }
+
+        this.engine = engine;
+        return engine;
+    }
 
     getVar(varName) {
         return this.engine.getCurrentScope().items[varName];
@@ -52,7 +74,7 @@ export class PascalJs {
 
     getVarValue(varName) {
         let variable = this.getVar(varName);
-        
+
         if (variable.typeId === TypesIds.ARRAY) {
             return this.getVar(varName).items;
         } else  if (variable.typeId === TypesIds.ENUM) {
@@ -63,6 +85,6 @@ export class PascalJs {
     }
 
     getError() {
-       return this.error;   
+       return this.error;
     }
 }
