@@ -4,12 +4,13 @@ import { RuntimeError } from '../Errors/RuntimeError';
 
 export class BaseIO
 {
-    constructor(printer)
+    constructor(printer, reader)
     {
         this.errorsDescription = new ErrorsDescription();
 
         this.positionNow = new TextPosition();
         this.printer = printer;
+        this.reader = reader;
         this.currentLine;
         this.currentLineErrors = [];
         this.lines = [];
@@ -81,5 +82,10 @@ export class BaseIO
         for (let i = lineNumber + 1; i <= this.lines.length - 1; i++) {
             this.printer.listLine(this.lines[i], i);
         }
+    }
+
+    readWords(expectedNumberOfWords)
+    {
+        this.reader.readWords(expectedNumberOfWords);
     }
 }

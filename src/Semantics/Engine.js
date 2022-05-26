@@ -71,7 +71,7 @@ export class Engine
         this.scopes = [];
         this.currentScopeId = 0;
         this.scopes[this.currentScopeId] = new Scope();
-        this.proceduresStore = new ProceduresStore(config.outputStream, config.ouputNewLineSymbol);
+        this.proceduresStore = new ProceduresStore(config.input, config.outputStream, config.ouputNewLineSymbol);
         this.functionsStore = new FunctionsStore();
         this.errorsDescription = new ErrorsDescription();
     }
@@ -247,7 +247,7 @@ export class Engine
             this.run();
 
             if (typeof calledElem.innerRun === 'function' ) {
-                calledElem.innerRun(scope);
+                calledElem.innerRun(scope, this);
             }
 
             let result = null;
@@ -269,6 +269,8 @@ export class Engine
             let baseExpression = this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression);
             let propertyIdentifier = identifierBranchExpression.subField;
             return baseExpression.getByPropertyIdentifier(propertyIdentifier);
+        } else {
+            this.addError(ErrorsCodes.typesMismatch, 'Identifier branch expected.', identifierBranchExpression);
         }
     }
 
@@ -463,11 +465,15 @@ export class Engine
 
     addParametersToScope(parameters, signature, scope)
     {
+        let self = this;
         if (signature instanceof UnboundedParametersList) {
-            let parametersValues = parameters.map(elem => this.evaluateExpression(elem));
-            scope.setParametersList(parametersValues);
+            if (signature.byReference) {
+                scope.setParametersList(parameters);
+            } else {
+                let parametersValues = parameters.map(elem => this.evaluateExpression(elem));
+                scope.setParametersList(parametersValues);
+            }
         } else {
-            let self = this;
             let parametersCounter = 0;
             signature.forEach(function(appliedType) {
                 let identifiers = appliedType.identifiers;
@@ -706,5 +712,23 @@ export class Engine
                 (errorText === null ? '' : ('. ' + errorText));
         let currentPosition = treeNode === null ? null : treeNode.symbol.textPosition;
         throw new RuntimeError(errorCode, message, currentPosition);
+    }
+
+    setIdentifierBranchValue(identifierBranch, expressionResult)
+    {
+        let currentScope = this.getCurrentScope();
+
+        if (identifierBranch instanceof TakeField) {
+            let recordVariable = this.evaluateIdentifierBranch(identifierBranch.baseExpression);
+            let propertyIdentifier = identifierBranch.subField;
+
+            currentScope.setRecordVariableProperty(recordVariable, propertyIdentifier, expressionResult);
+        } else {
+            if (identifierBranch instanceof IndexedIdentifier) {
+                this.evaluateIndexRing(identifierBranch.indexRing);
+            }
+
+            currentScope.setVariableValue(identifierBranch, expressionResult, identifierBranch);
+        }
     }
 };

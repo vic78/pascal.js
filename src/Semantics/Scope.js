@@ -178,9 +178,7 @@ export class Scope
         }
         let name = identifier.symbol.stringValue;
         let lowerCaseName = name.toLowerCase();
-        if (!this.items.hasOwnProperty(lowerCaseName)) {
-            this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, treeNode);
-        } else {
+        if (this.items.hasOwnProperty(lowerCaseName)) {
             let item = this.items[lowerCaseName];
 
             if (item instanceof ScalarVariable ||
@@ -224,6 +222,10 @@ export class Scope
             } else {
                 this.addError(ErrorsCodes.typesMismatch, null, treeNode);
             }
+        } else if (this.parentScope) {
+            this.parentScope.setValue(destination, type, value, treeNode);
+        } else {
+            this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, treeNode);
         }
     }
 
@@ -244,9 +246,7 @@ export class Scope
 
         let name = identifier.symbol.stringValue;
         let lowerCaseName = name.toLowerCase();
-        if (!this.items.hasOwnProperty(lowerCaseName)) {
-            this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, treeNode);
-        } else {
+        if (this.items.hasOwnProperty(lowerCaseName)) {
             let item = this.items[lowerCaseName];
 
             if (item instanceof ScalarVariable ||
@@ -298,6 +298,10 @@ export class Scope
             } else {
                 this.addError(ErrorsCodes.typesMismatch, null, treeNode);
             }
+        } else if (this.parentScope) {
+            this.parentScope.setVariableValue(destination, variable, treeNode);
+        } else {
+            this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, treeNode);
         }
     }
 
@@ -354,6 +358,8 @@ export class Scope
         let lowerCaseName = name.toLowerCase();
         if (this.items.hasOwnProperty(lowerCaseName)) {
             return this.items[lowerCaseName];
+        } else {
+            return this.parentScope ? this.parentScope.getVariable(name) : null;
         }
     }
 
@@ -370,7 +376,7 @@ export class Scope
             } else if (this.enumsItems.hasOwnProperty(lowerCaseName)) {
                 return this.enumsItems[lowerCaseName];
             } else {
-                return null;
+                return this.parentScope ? this.parentScope.getElementByIdentifier(identifier) : null;
             }
         }
     }
@@ -531,10 +537,15 @@ export class Scope
         let name = variableIdentifier.symbol.value;
         let lowerCaseName = name.toLowerCase();
 
-        if (!this.items.hasOwnProperty(lowerCaseName)) {
-            this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, variableIdentifier);
-        } else {
+        if (this.items.hasOwnProperty(lowerCaseName)) {
             return this.items[lowerCaseName];
+        } else {
+            let variable = this.parentScope.getVariableByReference(variableIdentifier);
+            if (!variable) {
+                this.addError(ErrorsCodes.variableNotDeclared, `Variable '${lowerCaseName}' not declared.`, variableIdentifier);
+            } else {
+                return variable;
+            }
         }
     }
 

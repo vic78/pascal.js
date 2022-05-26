@@ -27,7 +27,8 @@ export class PascalJs {
 
         try {
             var fileIO = new FileIO(filePath,
-                this.config.listingOutput
+                this.config.listingOutput,
+                this.config.input,
             );
             var lexicalAnalyzer = new LexicalAnalyzer(fileIO);
             var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);

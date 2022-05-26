@@ -2,9 +2,9 @@ import { BaseIO } from './BaseIO';
 
 export class StringIO extends BaseIO
 {
-    constructor(programText, printer)
+    constructor(programText, printer, reader = null)
     {
-        super(printer);
+        super(printer, reader);
         this.setLines(programText);
     }
 }
