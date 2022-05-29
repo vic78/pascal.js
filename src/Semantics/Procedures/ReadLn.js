@@ -4,6 +4,8 @@ import { ScalarVariable } from '../Variables/ScalarVariable';
 import { UnboundedParametersList } from '../Signatures/UnboundedParametersList';
 import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType';
 import { TypesIds } from '../../Semantics/Variables/TypesIds';
+import { ErrorsCodes } from '../../Errors/ErrorsCodes';
+import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType';
 
 export class ReadLn extends ProcedureItem
 {
@@ -22,26 +24,55 @@ export class ReadLn extends ProcedureItem
         let parametersList = scope.getParametersList();
 
         let parametersTypes = [];
+        let parametersTypesIds = [];
         parametersList.forEach(function(parameter) {
-            parametersTypes.push(engine.evaluateIdentifierBranch(parameter).typeId);
+            parametersTypesIds.push(engine.evaluateIdentifierBranch(parameter).typeId);
+            parametersTypes.push(engine.evaluateIdentifierBranch(parameter).type);
         });
 
-        let words = this.getWords(parametersTypes, this.ouputNewLineSymbol);
+        let words = this.getWords(parametersTypesIds, this.ouputNewLineSymbol);
+        let self = this;
 
         words.forEach(function(word, index) {
-            let scalarVariable = new ScalarVariable(word, parametersTypes[index]);
+
+            let value = null;
+            switch (parametersTypesIds[index]) {
+                case TypesIds.INTEGER:
+                    value = Number.parseInt(word);
+                    if (isNaN(value)) {
+                        scope.addError(ErrorsCodes.typesMismatch, `Integer value expected, but '${word}' found.`, parametersList[index]);
+                    }
+                    break;
+                case TypesIds.REAL:
+                    value = parseFloat(word);
+                    if (isNaN(value)) {
+                        scope.addError(ErrorsCodes.typesMismatch, `Float value expected, but '${word}' found.`, parametersList[index]);
+                    }
+                    break;
+                case TypesIds.CHAR:
+                case TypesIds.STRING:
+                    value = word;
+                    break;
+                default:
+                    let type = parametersTypes[index];
+                    if (!type) {
+                        type = new ScalarType(null, parametersTypesIds[index]);
+                    }
+                    scope.addError(ErrorsCodes.typesMismatch, `Cannot input value of this type: ${type}`, parametersList[index]);
+            }
+            let scalarVariable = new ScalarVariable(value, parametersTypesIds[index]);
             engine.setIdentifierBranchValue(parametersList[index], scalarVariable);
         });
 
         this.outputStream.write(this.ouputNewLineSymbol);
     }
 
-    getWords(parametersTypes)
+    getWords(parametersTypesIds)
     {
         let words = [];
 
         let self = this;
-        parametersTypes.forEach(function(typeId) {
+        parametersTypesIds.forEach(function(typeId) {
             words.push(self.getWord(typeId));
         });
 
@@ -76,6 +107,7 @@ export class ReadLn extends ProcedureItem
                 } while (/[\r\n\s\t]/.exec(this.char) === null);
                 break;
             case TypesIds.STRING:
+            default:
                 if (this.char === null) {
                     this.nextChar();
                 }
