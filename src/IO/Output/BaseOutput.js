@@ -1,4 +1,4 @@
-import {getNumberOfDigits} from '../helpers';
+import {getNumberOfDigits} from '../helpers.js';
 
 export class BaseOutput
 {

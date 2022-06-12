@@ -1,4 +1,4 @@
-import { BaseOutput } from './BaseOutput';
+import { BaseOutput } from './BaseOutput.js';
 
 export class ConsoleOutput extends BaseOutput
 {

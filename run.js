@@ -1,11 +1,11 @@
-import { FileIO } from './src/IO/FileIO';
-import { ConsoleOutput } from './src/IO/Output/ConsoleOutput';
-import { ConsoleInput } from './src/IO/Input/ConsoleInput';
-import { LexicalAnalyzer } from './src/LexicalAnalyzer/LexicalAnalyzer';
-import { SyntaxAnalyzer } from './src/SyntaxAnalyzer/SyntaxAnalyzer';
-import { Engine } from './src/Semantics/Engine';
-import { RuntimeError } from './src/Errors/RuntimeError';
-import { config } from './src/PascalJs/demoConfig';
+import { FileIO } from './src/IO/FileIO.js';
+import { ConsoleOutput } from './src/IO/Output/ConsoleOutput.js';
+import { ConsoleInput } from './src/IO/Input/ConsoleInput.js';
+import { LexicalAnalyzer } from './src/LexicalAnalyzer/LexicalAnalyzer.js';
+import { SyntaxAnalyzer } from './src/SyntaxAnalyzer/SyntaxAnalyzer.js';
+import { Engine } from './src/Semantics/Engine.js';
+import { RuntimeError } from './src/Errors/RuntimeError.js';
+import { config } from './src/PascalJs/demoConfig.js';
 
 
 var fileIO = new FileIO('example.pas', new ConsoleOutput(), new ConsoleInput());

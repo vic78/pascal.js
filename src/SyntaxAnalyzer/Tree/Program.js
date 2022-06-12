@@ -1,4 +1,4 @@
-import { ProgramBase } from './ProgramBase';
+import { ProgramBase } from './ProgramBase.js';
 
 export class Program extends ProgramBase
 {

@@ -1,4 +1,4 @@
-import { ErrorsCodes } from './ErrorsCodes';
+import { ErrorsCodes } from './ErrorsCodes.js';
 
 export class ErrorsDescription
 {

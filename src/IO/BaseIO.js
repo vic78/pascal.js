@@ -1,6 +1,6 @@
-import { TextPosition } from './TextPosition';
-import { ErrorsDescription } from '../Errors/ErrorsDescription';
-import { RuntimeError } from '../Errors/RuntimeError';
+import { TextPosition } from './TextPosition.js';
+import { ErrorsDescription } from '../Errors/ErrorsDescription.js';
+import { RuntimeError } from '../Errors/RuntimeError.js';
 
 export class BaseIO
 {

@@ -1,5 +1,5 @@
-import { Ord } from './Functions/Ord';
-import { Chr } from './Functions/Chr';
+import { Ord } from './Functions/Ord.js';
+import { Chr } from './Functions/Chr.js';
 
 export class FunctionsStore
 {

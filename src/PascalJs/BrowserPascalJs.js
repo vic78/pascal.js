@@ -1,15 +1,13 @@
 
-import { FileIO } from '../IO/FileIO.js';
+//import { FileIO } from '../IO/FileIO.js';
 import { StringIO } from '../IO/StringIO.js';
-import { ConsoleOutput } from '../IO/Output/ConsoleOutput.js';
 import { LexicalAnalyzer } from '../LexicalAnalyzer/LexicalAnalyzer.js';
 import { SyntaxAnalyzer } from '../SyntaxAnalyzer/SyntaxAnalyzer.js';
 import { Engine } from '../Semantics/Engine.js';
 import { RuntimeError } from '../Errors/RuntimeError.js';
-import { config } from './demoConfig.js';
 import { TypesIds } from '../Semantics/Variables/TypesIds.js';
 
-export class PascalJs {
+export class BrowserPascalJs {
     /**
      * @type Engine
      */
@@ -22,30 +20,6 @@ export class PascalJs {
 
     constructor(config) {
         this.config = config;
-    }
-
-    runFile(filePath) {
-
-        try {
-            var fileIO = new FileIO(filePath,
-                this.config.listingOutput,
-                this.config.input,
-            );
-            var lexicalAnalyzer = new LexicalAnalyzer(fileIO);
-            var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
-            var tree = syntaxAnalyzer.analyze();
-            var engine = new Engine(tree, this.config);
-            engine.run();
-        } catch (e) {
-
-            if (e instanceof RuntimeError) {
-                this.error = e;
-            } else throw e;
-        }
-
-
-        this.engine = engine;
-        return engine;
     }
 
     runString(programText) {

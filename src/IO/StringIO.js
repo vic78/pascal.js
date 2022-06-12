@@ -1,4 +1,4 @@
-import { BaseIO } from './BaseIO';
+import { BaseIO } from './BaseIO.js';
 
 export class StringIO extends BaseIO
 {

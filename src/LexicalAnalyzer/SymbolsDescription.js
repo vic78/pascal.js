@@ -1,4 +1,4 @@
-import { SymbolsCodes } from './SymbolsCodes';
+import { SymbolsCodes } from './SymbolsCodes.js';
 
 export class SymbolsDescription
 {

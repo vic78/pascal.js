@@ -1,4 +1,4 @@
-import { ProgramBase } from '../SyntaxAnalyzer/Tree/ProgramBase';
+import { ProgramBase } from '../SyntaxAnalyzer/Tree/ProgramBase.js';
 
 export class ProcedureItem extends ProgramBase
 {

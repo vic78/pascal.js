@@ -1,6 +1,6 @@
-import { TypeBase } from './TypeBase';
-import { TypesIds } from '../../../Semantics/Variables/TypesIds';
-import { CallableVariable } from '../../../Semantics/Variables/CallableVariable';
+import { TypeBase } from './TypeBase.js';
+import { TypesIds } from '../../../Semantics/Variables/TypesIds.js';
+import { CallableVariable } from '../../../Semantics/Variables/CallableVariable.js';
 
 export class FunctionType extends TypeBase
 {

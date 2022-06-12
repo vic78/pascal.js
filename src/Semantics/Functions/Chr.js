@@ -1,6 +1,6 @@
-import { FunctionItem } from '../FunctionItem';
-import { TypesIds } from '../../Semantics/Variables/TypesIds';
-import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType'
+import { FunctionItem } from '../FunctionItem.js';
+import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
+import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType.js'
 
 export class Chr extends FunctionItem
 {

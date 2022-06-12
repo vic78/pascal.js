@@ -1,6 +1,6 @@
-import { TreeNodeBase } from './TreeNodeBase';
-import { SymbolsCodes } from '../../LexicalAnalyzer/SymbolsCodes';
-import { TypesIds } from '../../Semantics/Variables/TypesIds';
+import { TreeNodeBase } from './TreeNodeBase.js';
+import { SymbolsCodes } from '../../LexicalAnalyzer/SymbolsCodes.js';
+import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
 
 export class Constant extends TreeNodeBase
 {

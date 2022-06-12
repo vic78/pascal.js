@@ -1,4 +1,4 @@
-import { BaseIO } from './BaseIO';
+import { BaseIO } from './BaseIO.js';
 import fs from 'fs'
 
 export class FileIO extends BaseIO

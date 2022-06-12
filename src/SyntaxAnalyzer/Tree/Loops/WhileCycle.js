@@ -1,4 +1,4 @@
-import { TreeNodeBase } from '../TreeNodeBase';
+import { TreeNodeBase } from '../TreeNodeBase.js';
 
 export class WhileCycle extends TreeNodeBase
 {

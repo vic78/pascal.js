@@ -1,4 +1,4 @@
-import { BaseVariable } from './BaseVariable';
+import { BaseVariable } from './BaseVariable.js';
 
 export class ScalarVariable extends BaseVariable
 {

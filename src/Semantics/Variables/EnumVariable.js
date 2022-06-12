@@ -1,5 +1,5 @@
-import { TypesIds } from './TypesIds';
-import { BaseVariable } from './BaseVariable';
+import { TypesIds } from './TypesIds.js';
+import { BaseVariable } from './BaseVariable.js';
 
 export class EnumVariable extends BaseVariable
 {

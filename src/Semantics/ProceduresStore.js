@@ -1,7 +1,7 @@
-import { ProcedureItem } from './ProcedureItem';
-import { WriteLn } from './Procedures/WriteLn';
-import { Write } from './Procedures/Write';
-import { ReadLn } from './Procedures/ReadLn';
+import { ProcedureItem } from './ProcedureItem.js';
+import { WriteLn } from './Procedures/WriteLn.js';
+import { Write } from './Procedures/Write.js';
+import { ReadLn } from './Procedures/ReadLn.js';
 
 export class ProceduresStore
 {

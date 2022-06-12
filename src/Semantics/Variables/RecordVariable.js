@@ -1,9 +1,9 @@
-import { TypesIds } from './TypesIds';
-import { BaseVariable } from './BaseVariable';
-import { ArrayVariable } from './ArrayVariable';
-import { ArrayType } from '../../SyntaxAnalyzer/Tree/Types/ArrayType';
-import { IndexRing } from '../../SyntaxAnalyzer/Tree/Arrays/IndexRing';
-import { ErrorsCodes } from '../../Errors/ErrorsCodes';
+import { TypesIds } from './TypesIds.js';
+import { BaseVariable } from './BaseVariable.js';
+import { ArrayVariable } from './ArrayVariable.js';
+import { ArrayType } from '../../SyntaxAnalyzer/Tree/Types/ArrayType.js';
+import { IndexRing } from '../../SyntaxAnalyzer/Tree/Arrays/IndexRing.js';
+import { ErrorsCodes } from '../../Errors/ErrorsCodes.js';
 
 export class RecordVariable extends BaseVariable
 {

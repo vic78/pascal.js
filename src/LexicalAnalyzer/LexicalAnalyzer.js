@@ -1,12 +1,12 @@
-import { SymbolsCodes } from './SymbolsCodes';
-import { KeyWords } from './KeyWords';
-import { Symbol } from './Symbols/Symbol';
-import { NmbFloat } from './Symbols/NmbFloat';
-import { NmbInt } from './Symbols/NmbInt';
-import { OneSymbol } from './Symbols/OneSymbol';
-import { StringConstant } from './Symbols/StringConstant';
-import { BoolConstant } from './Symbols/BoolConstant';
-import { ErrorsCodes } from '../Errors/ErrorsCodes';
+import { SymbolsCodes } from './SymbolsCodes.js';
+import { KeyWords } from './KeyWords.js';
+import { Symbol } from './Symbols/Symbol.js';
+import { NmbFloat } from './Symbols/NmbFloat.js';
+import { NmbInt } from './Symbols/NmbInt.js';
+import { OneSymbol } from './Symbols/OneSymbol.js';
+import { StringConstant } from './Symbols/StringConstant.js';
+import { BoolConstant } from './Symbols/BoolConstant.js';
+import { ErrorsCodes } from '../Errors/ErrorsCodes.js';
 
 export class LexicalAnalyzer
 {

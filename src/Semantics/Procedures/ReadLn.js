@@ -1,11 +1,11 @@
-import { ProcedureItem } from '../ProcedureItem';
-import { EnumVariable } from '../Variables/EnumVariable';
-import { ScalarVariable } from '../Variables/ScalarVariable';
-import { UnboundedParametersList } from '../Signatures/UnboundedParametersList';
-import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType';
-import { TypesIds } from '../../Semantics/Variables/TypesIds';
-import { ErrorsCodes } from '../../Errors/ErrorsCodes';
-import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType';
+import { ProcedureItem } from '../ProcedureItem.js';
+import { EnumVariable } from '../Variables/EnumVariable.js';
+import { ScalarVariable } from '../Variables/ScalarVariable.js';
+import { UnboundedParametersList } from '../Signatures/UnboundedParametersList.js';
+import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
+import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
+import { ErrorsCodes } from '../../Errors/ErrorsCodes.js';
+import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 
 export class ReadLn extends ProcedureItem
 {

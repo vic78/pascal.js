@@ -1,8 +1,8 @@
-import { ProcedureItem } from '../ProcedureItem';
-import { EnumVariable } from '../Variables/EnumVariable';
-import { ScalarVariable } from '../Variables/ScalarVariable';
-import { UnboundedParametersList } from '../Signatures/UnboundedParametersList';
-import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType';
+import { ProcedureItem } from '../ProcedureItem.js';
+import { EnumVariable } from '../Variables/EnumVariable.js';
+import { ScalarVariable } from '../Variables/ScalarVariable.js';
+import { UnboundedParametersList } from '../Signatures/UnboundedParametersList.js';
+import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
 
 export class Write extends ProcedureItem
 {

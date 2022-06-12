@@ -1,5 +1,5 @@
-import { ConsoleOutput } from "../IO/Output/ConsoleOutput";
-import { ConsoleInput } from "../IO/Input/ConsoleInput";
+import { ConsoleOutput } from '../IO/Output/ConsoleOutput.js';
+import { ConsoleInput } from '../IO/Input/ConsoleInput.js';
 
 export const config = {
     outputStream: process.stdout,

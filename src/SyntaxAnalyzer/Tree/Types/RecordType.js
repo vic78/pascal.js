@@ -1,5 +1,5 @@
-import { TypeBase } from './TypeBase';
-import { TypesIds } from '../../../Semantics/Variables/TypesIds';
+import { TypeBase } from './TypeBase.js';
+import { TypesIds } from '../../../Semantics/Variables/TypesIds.js';
 
 export class RecordType extends TypeBase
 {
