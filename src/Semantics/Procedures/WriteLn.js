@@ -14,7 +14,7 @@ export class WriteLn extends ProcedureItem
         this.type = new ProcedureType(null, new UnboundedParametersList(), null);
     }
 
-    innerRun(scope)
+    async innerRun(scope)
     {
         let parametersList = scope.getParametersList();
 

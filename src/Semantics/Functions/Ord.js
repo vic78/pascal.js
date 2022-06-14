@@ -10,7 +10,7 @@ export class Ord extends FunctionItem
         this.returnType = new ScalarType(null, TypesIds.INTEGER);
     }
 
-    innerRun(scope)
+    async innerRun(scope)
     {
         let parametersList = scope.getParametersList();
         let charParameter = parametersList[0];

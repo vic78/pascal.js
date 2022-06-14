@@ -10,7 +10,7 @@ export class Chr extends FunctionItem
         this.returnType = new ScalarType(null, TypesIds.CHAR);
     }
 
-    innerRun(scope)
+    async innerRun(scope)
     {
         let parametersList = scope.getParametersList();
         let codeParameter = parametersList[0];

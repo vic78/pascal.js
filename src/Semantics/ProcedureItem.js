@@ -11,7 +11,7 @@ export class ProcedureItem extends ProgramBase
         this.name = null;
     }
 
-    innerRun()
+    async innerRun()
     {
     }
 };

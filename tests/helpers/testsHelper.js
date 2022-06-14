@@ -33,14 +33,14 @@ export function insp(data, comment = '') {
  * @param {boolean} ignoreInnerError=false is interpreter error expected
  * @returns {PascalJs}
  */
-export function runFile(ImportMetaUrlData, fileName, ignoreInnerError = false, config = null) {
+export async function runFile(ImportMetaUrlData, fileName, ignoreInnerError = false, config = null) {
 
     if (!config) {
         config = defaultConfig;
     }
 
     let PJS = new PascalJs(config);
-    PJS.runFile(getFullPath(ImportMetaUrlData, fileName));
+    await PJS.runFile(getFullPath(ImportMetaUrlData, fileName));
 
     if (!ignoreInnerError  && PJS.error) {
         throw PJS.error;
@@ -48,7 +48,7 @@ export function runFile(ImportMetaUrlData, fileName, ignoreInnerError = false, c
     return PJS;
 }
 
-export function runString(programText, ignoreInnerError = false, config = null) {
+export async function runString(programText, ignoreInnerError = false, config = null) {
 
     if (!config) {
         config = {
@@ -58,7 +58,7 @@ export function runString(programText, ignoreInnerError = false, config = null) 
     }
 
     let PJS = new PascalJs(config);
-    PJS.runString(programText);
+    await PJS.runString(programText);
 
     if (!ignoreInnerError && PJS.error) {
         throw PJS.error;

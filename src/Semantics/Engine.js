@@ -83,20 +83,18 @@ export class Engine
         return this.scopes[this.currentScopeId];
     }
 
-    run()
+    async run()
     {
         this.setConstants();
         this.setTypes();
         this.setVariables();
 
         let self = this;
+
         if (this.tree.sentences) {
-            this.tree.sentences.forEach(
-                function(sentence)
-                {
-                    self.evaluateSentence(sentence);
-                }
-            );
+            for (let i = 0; i < this.tree.sentences.length; i++) {
+                await this.evaluateSentence(this.tree.sentences[i]);
+            }
         }
     }
 
@@ -165,17 +163,17 @@ export class Engine
         }
     }
 
-    evaluateIndexRing(indexRing)
+    async evaluateIndexRing(indexRing)
     {
-        indexRing.evaluatedIndexExpression = this.evaluateExpression(indexRing.indexExpression);
+        indexRing.evaluatedIndexExpression = await this.evaluateExpression(indexRing.indexExpression);
         if (indexRing.indexRing instanceof IndexRing) {
-            this.evaluateIndexRing(indexRing.indexRing);
+            await this.evaluateIndexRing(indexRing.indexRing);
         }
 
         return indexRing;
     }
 
-    evaluateIdentifierBranch(identifierBranchExpression)
+    async evaluateIdentifierBranch(identifierBranchExpression)
     {
         if (identifierBranchExpression instanceof Identifier) {
             let currentScope = this.getCurrentScope();
@@ -206,19 +204,19 @@ export class Engine
         } else if (identifierBranchExpression instanceof IndexedIdentifier) {
             let currentScope = this.getCurrentScope();
 
-            let arrayVariable = this.evaluateIdentifierBranch(identifierBranchExpression.identifier);
+            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier);
             if (!(arrayVariable instanceof ArrayVariable)) {
                 this.addError(ErrorsCodes.arrayExpected, 'Array expected', identifierBranchExpression);
             }
 
-            identifierBranchExpression.indexRing = this.evaluateIndexRing(identifierBranchExpression.indexRing);
+            identifierBranchExpression.indexRing = await this.evaluateIndexRing(identifierBranchExpression.indexRing);
             return arrayVariable.getByIndexRing(identifierBranchExpression.indexRing);
 
         } else if (identifierBranchExpression instanceof FunctionCall) {
             let isDeclaredProcedure = null;
             let isDeclaredFunction = null;
 
-            let returnedElem = this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch);
+            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch);
             let calledElem = returnedElem instanceof CallableVariable ?
                         returnedElem.value :
                         returnedElem;
@@ -235,8 +233,7 @@ export class Engine
                 scope.callableName = calledElem.name.symbol.value;
             }
 
-            this.addParametersToScope(identifierBranchExpression.parameters, calledElem.type.signature, scope);
-
+            await this.addParametersToScope(identifierBranchExpression.parameters, calledElem.type.signature, scope);
             this.treesCounter++;
 
             this.tree = calledElem;
@@ -244,10 +241,10 @@ export class Engine
             this.currentScopeId++;
             this.scopes[this.currentScopeId] = scope;
 
-            this.run();
+            await this.run();
 
             if (typeof calledElem.innerRun === 'function' ) {
-                calledElem.innerRun(scope, this);
+                await calledElem.innerRun(scope, this);
             }
 
             let result = null;
@@ -263,10 +260,10 @@ export class Engine
             this.tree = this.trees[this.treesCounter];
             return result;
         } else if (identifierBranchExpression instanceof GetByPointer) {
-            let pointerVariable = this.evaluateIdentifierBranch(identifierBranchExpression.pointer);
+            let pointerVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.pointer);
             return pointerVariable.variable;
         } else if (identifierBranchExpression instanceof TakeField) {
-            let baseExpression = this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression);
+            let baseExpression = await this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression);
             let propertyIdentifier = identifierBranchExpression.subField;
             return baseExpression.getByPropertyIdentifier(propertyIdentifier);
         } else {
@@ -274,25 +271,25 @@ export class Engine
         }
     }
 
-    evaluateSentence(sentence)
+    async evaluateSentence(sentence)
     {
         let currentScope = this.getCurrentScope();
 
         if (sentence instanceof Assignation) {
             let destination = sentence.destination;
             let sourceExpression = sentence.sourceExpression;
-            let expressionResult = this.evaluateExpression(sourceExpression);
+            let expressionResult = await this.evaluateExpression(sourceExpression);
             let type = expressionResult.getType();
 
             if (destination instanceof TakeField) {
-                let recordVariable = this.evaluateIdentifierBranch(destination.baseExpression);
+                let recordVariable = await this.evaluateIdentifierBranch(destination.baseExpression);
                 let propertyIdentifier = destination.subField;
 
                 currentScope.setRecordVariableProperty(recordVariable, propertyIdentifier, expressionResult);
 
             } else {
                 if (destination instanceof IndexedIdentifier) {
-                    destination.indexRing = this.evaluateIndexRing(destination.indexRing);
+                    destination.indexRing = await this.evaluateIndexRing(destination.indexRing);
                 }
 
                 currentScope.setVariableValue(destination, expressionResult, sentence.destination);
@@ -302,28 +299,28 @@ export class Engine
                 let sentences = sentence.sentences;
                 let sentencesNumber = sentences.length;
                 for (let i = 0; i < sentencesNumber; i++) {
-                    let result = this.evaluateSentence(sentences[i]);
+                    let result = await this.evaluateSentence(sentences[i]);
                     if (result instanceof Break) {
                         return result;
                     }
                 }
             }
         } else if (sentence instanceof Implication) {
-            let condition = this.evaluateExpression(sentence.condition);
+            let condition = await this.evaluateExpression(sentence.condition);
 
             if (condition.value === true) {
-                return this.evaluateSentence(sentence.left);
+                return await this.evaluateSentence(sentence.left);
             } else {
-                return this.evaluateSentence(sentence.right);
+                return await this.evaluateSentence(sentence.right);
             }
         } else if ( sentence instanceof FunctionCall ||
                     sentence instanceof ProcedureCall) {
-            return this.evaluateIdentifierBranch(sentence);
+            return await this.evaluateIdentifierBranch(sentence);
         } else if (sentence instanceof WhileCycle) {
             let currentScope = this.getCurrentScope();
             currentScope.cycleDepth++;
-            while (this.evaluateExpression(sentence.condition).value === true) {
-                let result = this.evaluateSentence(sentence.body);
+            while ( ( await this.evaluateExpression(sentence.condition) ).value === true) {
+                let result = await this.evaluateSentence(sentence.body);
                 if (result instanceof Break) {
                     break;
                 }
@@ -333,17 +330,17 @@ export class Engine
             let currentScope = this.getCurrentScope();
             currentScope.cycleDepth++;
             do {
-                let result = this.evaluateSentence(sentence.body);
+                let result = await this.evaluateSentence(sentence.body);
                 if (result instanceof Break) {
                     break;
                 }
-            } while (this.evaluateExpression(sentence.condition).value !== true)
+            } while ( ( await this.evaluateExpression(sentence.condition) ).value !== true )
             currentScope.cycleDepth--;
         } else if (sentence instanceof ForCycle) {
             let currentScope = this.getCurrentScope();
             let variableIdentifier = sentence.variableIdentifier;
-            let currentValue = this.evaluateExpression(sentence.initExpression);
-            let lastValue = this.evaluateExpression(sentence.lastExpression);
+            let currentValue = await this.evaluateExpression(sentence.initExpression);
+            let lastValue = await this.evaluateExpression(sentence.lastExpression);
 
             let increment = null;
             let comparation = null;
@@ -417,7 +414,7 @@ export class Engine
                 new ScalarVariable(currentValue.value, typeId);
             let canContinue = true;
             while (comparation(currentValue, lastValue) && canContinue) {
-                let result = this.evaluateSentence(sentence.body);
+                let result = await this.evaluateSentence(sentence.body);
                 if (result instanceof Break) {
                     break;
                 }
@@ -435,7 +432,7 @@ export class Engine
                 return sentence;
             }
         } else if (sentence instanceof Switch) {
-            let switchValue = this.evaluateExpression(sentence.switchExpression);
+            let switchValue = await this.evaluateExpression(sentence.switchExpression);
             let caseFound = false;
             let currentScope = this.getCurrentScope();
 
@@ -463,50 +460,55 @@ export class Engine
         }
     }
 
-    addParametersToScope(parameters, signature, scope)
+    async addParametersToScope(parameters, signature, scope)
     {
-        let self = this;
         if (signature instanceof UnboundedParametersList) {
             if (signature.byReference) {
                 scope.setParametersList(parameters);
             } else {
-                let parametersValues = parameters.map(elem => this.evaluateExpression(elem));
+                let parametersValues = await Promise.all(
+                    parameters.map(async (elem) => await this.evaluateExpression(elem))
+                );
                 scope.setParametersList(parametersValues);
             }
         } else {
             let parametersCounter = 0;
-            signature.forEach(function(appliedType) {
+
+            for (let j = 0; j < signature.length; j++) {
+                let appliedType = signature[j];
                 let identifiers = appliedType.identifiers;
                 let byReference = appliedType.byReference;
-                identifiers.forEach(function(identifier) {
+
+                for (let j = 0; j < identifiers.length; j++) {
+                    let identifier = identifiers[j];
                     let type = appliedType.type;
                     let parameter = parameters[parametersCounter];
                     if (byReference) {
                         if (!(parameter instanceof Identifier)) {
-                            self.addError(ErrorsCodes.identifierExpected, 'Cannot use other expressions here', parameter);
+                            this.addError(ErrorsCodes.identifierExpected, 'Cannot use other expressions here', parameter);
                         }
                         scope.addVariableByReference(parameter, identifier);
                     } else {
-                        let result = self.evaluateExpression(parameter);
+                        let result = await this.evaluateExpression(parameter);
                         scope.addVariable(identifier, type);
                         scope.setValue(identifier, type, result.value, identifier);
                     }
                     parametersCounter++;
-                });
-            });
+                }
+            }
         }
     }
 
-    evaluateExpression(expression)
+    async evaluateExpression(expression)
     {
         if (expression instanceof GetPointer) {
             let indentifierBranch = expression.identifier;
-            let identifierBranchResult = this.evaluateIdentifierBranch(indentifierBranch);
+            let identifierBranchResult = await this.evaluateIdentifierBranch(indentifierBranch);
             let type = identifierBranchResult.getType();
             return new PointerVariable(identifierBranchResult, type);
         } else if (expression instanceof Equal) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.ENUM &&
@@ -519,8 +521,8 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof Greater) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.CHAR &&
@@ -535,8 +537,8 @@ export class Engine
             }
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof Less) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.CHAR &&
@@ -552,8 +554,8 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof GreaterOrEqual) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.CHAR &&
@@ -569,8 +571,8 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof LessOrEqual) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.CHAR &&
@@ -586,8 +588,8 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof NotEqual) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = null;
             if (leftOperand.typeId === TypesIds.ENUM &&
@@ -600,24 +602,24 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof In) {
-            let leftOperand = this.evaluateExpression(expression.left);
-            let rightOperand = this.evaluateExpression(expression.right);
+            let leftOperand = await this.evaluateExpression(expression.left);
+            let rightOperand = await this.evaluateExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = false;
 
             return new ScalarVariable(result, typeId)
         } else {
-            return this.evaluateSimpleExpression(expression);
+            return await this.evaluateSimpleExpression(expression);
         }
     }
 
-    evaluateSimpleExpression(expression)
+    async evaluateSimpleExpression(expression)
     {
         if (expression instanceof Addition ||
                 expression instanceof Subtraction) {
 
-            let leftOperand = this.evaluateSimpleExpression(expression.left);
-            let rightOperand = this.evaluateSimpleExpression(expression.right);
+            let leftOperand = await this.evaluateSimpleExpression(expression.left);
+            let rightOperand = await this.evaluateSimpleExpression(expression.right);
             let typeId = leftOperand.typeId === TypesIds.REAL ||
                     rightOperand.typeId === TypesIds.REAL ? TypesIds.REAL : TypesIds.INTEGER;
 
@@ -630,67 +632,67 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof LogicalOr) {
-            let leftOperand = this.evaluateSimpleExpression(expression.left);
-            let rightOperand = this.evaluateSimpleExpression(expression.right);
+            let leftOperand = await this.evaluateSimpleExpression(expression.left);
+            let rightOperand = await this.evaluateSimpleExpression(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = leftOperand.value || rightOperand.value;
 
             return new ScalarVariable(result, typeId);
         } else {
-            return this.evaluateTerm(expression);
+            return await this.evaluateTerm(expression);
         }
     }
 
-    evaluateTerm(expression)
+    async evaluateTerm(expression)
     {
         if (expression instanceof Not) {
-            let term = this.evaluateTerm(expression.value);
+            let term = await this.evaluateTerm(expression.value);
             return new ScalarVariable(!term.value, term.typeId);
         } else if (expression instanceof UnaryMinus) {
-            let term = this.evaluateTerm(expression.value);
+            let term = await this.evaluateTerm(expression.value);
             return new ScalarVariable(-term.value, term.typeId);
         } else if (expression instanceof Multiplication) {
-            let leftOperand = this.evaluateMultiplier(expression.left);
-            let rightOperand = this.evaluateMultiplier(expression.right);
+            let leftOperand = await this.evaluateMultiplier(expression.left);
+            let rightOperand = await this.evaluateMultiplier(expression.right);
             let typeId = leftOperand.typeId === TypesIds.REAL ||
                     rightOperand.typeId === TypesIds.REAL ? TypesIds.REAL : TypesIds.INTEGER;
             let result = leftOperand.value * rightOperand.value;
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof Division) {
-            let leftOperand = this.evaluateMultiplier(expression.left);
-            let rightOperand = this.evaluateMultiplier(expression.right);
+            let leftOperand = await this.evaluateMultiplier(expression.left);
+            let rightOperand = await this.evaluateMultiplier(expression.right);
             let typeId = TypesIds.REAL;
             let result = leftOperand.value / rightOperand.value;
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof IntegerDivision) {
-            let leftOperand = this.evaluateMultiplier(expression.left);
-            let rightOperand = this.evaluateMultiplier(expression.right);
+            let leftOperand = await this.evaluateMultiplier(expression.left);
+            let rightOperand = await this.evaluateMultiplier(expression.right);
             let typeId = TypesIds.INTEGER;
             let result = Math.trunc(leftOperand.value / rightOperand.value);
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof Modulo) {
-            let leftOperand = this.evaluateMultiplier(expression.left);
-            let rightOperand = this.evaluateMultiplier(expression.right);
+            let leftOperand = await this.evaluateMultiplier(expression.left);
+            let rightOperand = await this.evaluateMultiplier(expression.right);
             let typeId = TypesIds.INTEGER;
             let result = leftOperand.value % rightOperand.value;
 
             return new ScalarVariable(result, typeId);
         } else if (expression instanceof LogicalAnd) {
-            let leftOperand = this.evaluateMultiplier(expression.left);
-            let rightOperand = this.evaluateMultiplier(expression.right);
+            let leftOperand = await this.evaluateMultiplier(expression.left);
+            let rightOperand = await this.evaluateMultiplier(expression.right);
             let typeId = TypesIds.BOOLEAN;
             let result = leftOperand.value && rightOperand.value;
 
             return new ScalarVariable(result, typeId);
         } else {
-            return this.evaluateMultiplier(expression);
+            return await this.evaluateMultiplier(expression);
         }
     }
 
-    evaluateMultiplier(expression)
+    async evaluateMultiplier(expression)
     {
         if (expression instanceof Constant) {
             return new ScalarVariable(expression.symbol.value, expression.typeId);
@@ -700,9 +702,9 @@ export class Engine
                 expression instanceof GetByPointer ||
                 expression instanceof TakeField) {
 
-            return this.evaluateIdentifierBranch(expression);
+            return await this.evaluateIdentifierBranch(expression);
         } else {
-            return this.evaluateExpression(expression);
+            return await this.evaluateExpression(expression);
         }
     }
 
@@ -714,12 +716,12 @@ export class Engine
         throw new RuntimeError(errorCode, message, currentPosition);
     }
 
-    setIdentifierBranchValue(identifierBranch, expressionResult)
+    async setIdentifierBranchValue(identifierBranch, expressionResult)
     {
         let currentScope = this.getCurrentScope();
 
         if (identifierBranch instanceof TakeField) {
-            let recordVariable = this.evaluateIdentifierBranch(identifierBranch.baseExpression);
+            let recordVariable = await this.evaluateIdentifierBranch(identifierBranch.baseExpression);
             let propertyIdentifier = identifierBranch.subField;
 
             currentScope.setRecordVariableProperty(recordVariable, propertyIdentifier, expressionResult);

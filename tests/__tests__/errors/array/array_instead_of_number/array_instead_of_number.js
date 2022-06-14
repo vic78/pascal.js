@@ -3,9 +3,9 @@ import { runFile } from 'tests/helpers/testsHelper';
 import { ErrorsCodes } from '../../../../../src/Errors/ErrorsCodes';
 
 
-let pjs = runFile(import.meta.url, 'array_instead_of_number.pas', true);
 
-test('------TEMP! uncomment this!', () => {
+test('------TEMP! uncomment this!', async () => {
+    let pjs = await runFile(import.meta.url, 'array_instead_of_number.pas', true);
   // insp(pjs.error.errorCode, 'errorCode');
 
   //expect(pjs.getError().errorCode).toBe(ErrorsCodes.typesMismatch); // real checking

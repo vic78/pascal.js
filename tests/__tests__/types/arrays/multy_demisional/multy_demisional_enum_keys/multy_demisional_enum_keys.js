@@ -1,12 +1,8 @@
 import { expect, test } from '@jest/globals';
 import { runFile } from 'tests/helpers/testsHelper';
 
-let pjs = runFile(import.meta.url, 'multy_dem_arrays_enum_keys.pas');
-// insp(pjs.getVarValue('a'), ' a ');
 
-test('a1', () => {
-  expect(pjs.getVarValue('a1')).toBe(10); 
+test('a1', async () => {
+    let pjs = await runFile(import.meta.url, 'multy_dem_arrays_enum_keys.pas');
+    expect(pjs.getVarValue('a1')).toBe(10);
 });
-
-
-

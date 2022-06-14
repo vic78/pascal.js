@@ -19,22 +19,21 @@ export class ReadLn extends ProcedureItem
         this.char = null;
     }
 
-    innerRun(scope, engine)
+    async innerRun(scope, engine)
     {
         let parametersList = scope.getParametersList();
-
         let parametersTypes = [];
         let parametersTypesIds = [];
-        parametersList.forEach(function(parameter) {
-            parametersTypesIds.push(engine.evaluateIdentifierBranch(parameter).typeId);
-            parametersTypes.push(engine.evaluateIdentifierBranch(parameter).type);
+
+        await parametersList.forEach(async function(parameter) {
+            let evaluatedParameter = await engine.evaluateIdentifierBranch(parameter);
+            parametersTypesIds.push(evaluatedParameter.typeId);
+            parametersTypes.push(evaluatedParameter.type);
         });
 
-        let words = this.getWords(parametersTypesIds, this.ouputNewLineSymbol);
+        let words = await this.getWords(parametersTypesIds, this.ouputNewLineSymbol);
         let self = this;
-
-        words.forEach(function(word, index) {
-
+        await words.forEach(async function(word, index) {
             let value = null;
             switch (parametersTypesIds[index]) {
                 case TypesIds.INTEGER:
@@ -61,34 +60,35 @@ export class ReadLn extends ProcedureItem
                     scope.addError(ErrorsCodes.typesMismatch, `Cannot input value of this type: ${type}`, parametersList[index]);
             }
             let scalarVariable = new ScalarVariable(value, parametersTypesIds[index]);
-            engine.setIdentifierBranchValue(parametersList[index], scalarVariable);
+//            console.log(scalarVariable);
+//            console.log(parametersList);
+
+            await engine.setIdentifierBranchValue(parametersList[index], scalarVariable);
         });
 
         this.outputStream.write(this.ouputNewLineSymbol);
     }
 
-    getWords(parametersTypesIds)
+    async getWords(parametersTypesIds)
     {
         let words = [];
 
-        let self = this;
-        parametersTypesIds.forEach(function(typeId) {
-            words.push(self.getWord(typeId));
-        });
+        for (let i = 0; i < parametersTypesIds.length; i++) {
+            let res  = await this.getWord(parametersTypesIds[0]);
+            words[i] = res;
+        }
 
         return words;
     }
 
-    getWord(typeId)
+    async getWord(typeId)
     {
-        let words = [];
-        let char = '';
         let currentWord = '';
 
         switch (typeId) {
             case TypesIds.CHAR:
                 if (this.char === null) {
-                    currentWord = this.input.getChar();
+                    currentWord = await this.input.getChar();
                 } else {
                     currentWord = this.char;
                     this.char = null;
@@ -98,22 +98,22 @@ export class ReadLn extends ProcedureItem
             case TypesIds.INTEGER:
             case TypesIds.REAL:
                 while (this.char === null ||
-                        /[\r\n\s\t]/.exec(this.char) !== null) {;
-                    this.nextChar();
+                        /[\r\n\s\t]/.exec(this.char) !== null) {
+                    await this.nextChar();
                 }
                 do {
                     currentWord += this.char;
-                    this.nextChar();
+                    await this.nextChar();
                 } while (/[\r\n\s\t]/.exec(this.char) === null);
                 break;
             case TypesIds.STRING:
             default:
                 if (this.char === null) {
-                    this.nextChar();
+                    await this.nextChar();
                 }
                 while (this.char !== this.ouputNewLineSymbol) {
                     currentWord += this.char;
-                    this.nextChar();
+                    await this.nextChar();
                 }
                 break;
         }
@@ -121,8 +121,10 @@ export class ReadLn extends ProcedureItem
         return currentWord;
     }
 
-    nextChar()
+    async nextChar()
     {
-        this.char = this.input.getChar();
+        let charPr = await this.input.getChar();
+
+        this.char =  charPr;
     }
 };

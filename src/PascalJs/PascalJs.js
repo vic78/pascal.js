@@ -24,7 +24,7 @@ export class PascalJs {
         this.config = config;
     }
 
-    runFile(filePath) {
+    async runFile(filePath) {
 
         try {
             var fileIO = new FileIO(filePath,
@@ -35,7 +35,7 @@ export class PascalJs {
             var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
             var tree = syntaxAnalyzer.analyze();
             var engine = new Engine(tree, this.config);
-            engine.run();
+            await engine.run();
         } catch (e) {
 
             if (e instanceof RuntimeError) {
@@ -48,7 +48,7 @@ export class PascalJs {
         return engine;
     }
 
-    runString(programText) {
+    async runString(programText) {
 
         try {
             var fileIO = new StringIO(programText,
@@ -58,7 +58,7 @@ export class PascalJs {
             var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
             var tree = syntaxAnalyzer.analyze();
             var engine = new Engine(tree, this.config);
-            engine.run();
+            await engine.run();
         } catch (e) {
 
             if (e instanceof RuntimeError) {

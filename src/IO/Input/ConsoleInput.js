@@ -2,7 +2,7 @@ import fs from 'fs';
 
 export class ConsoleInput
 {
-    getChar()
+    async getChar()
     {
         let code = this.getByte();
 
