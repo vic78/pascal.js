@@ -22,7 +22,18 @@ export class BrowserPascalJs {
         this.config = config;
     }
 
-    runString(programText) {
+    async runString(programText) {
+
+        let handleError = (e) => {
+            if (e instanceof RuntimeError) {
+                fileIO.printListing(e);
+                let lines = this.config.listingOutput.outputLines;
+                for (let i = 0; i < lines.length; i++) {
+                    this.config.outputStream.addLine(lines[i], true);
+                }
+                this.error = e;
+            } else throw e;
+        };
 
         try {
             var fileIO = new StringIO(programText,
@@ -32,12 +43,9 @@ export class BrowserPascalJs {
             var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
             var tree = syntaxAnalyzer.analyze();
             var engine = new Engine(tree, this.config);
-            engine.run();
+            await engine.run().catch(handleError);
         } catch (e) {
-
-            if (e instanceof RuntimeError) {
-                this.error = e;
-            } else throw e;
+            handleError(e);
         }
 
         this.engine = engine;
