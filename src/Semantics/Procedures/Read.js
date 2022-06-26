@@ -7,7 +7,7 @@ import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
 import { ErrorsCodes } from '../../Errors/ErrorsCodes.js';
 import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 
-export class ReadLn extends ProcedureItem
+export class Read extends ProcedureItem
 {
     constructor(input, outputStream, ouputNewLineSymbol)
     {

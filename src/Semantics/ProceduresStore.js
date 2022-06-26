@@ -2,6 +2,7 @@ import { ProcedureItem } from './ProcedureItem.js';
 import { WriteLn } from './Procedures/WriteLn.js';
 import { Write } from './Procedures/Write.js';
 import { ReadLn } from './Procedures/ReadLn.js';
+import { Read } from './Procedures/Read.js';
 
 export class ProceduresStore
 {
@@ -11,6 +12,7 @@ export class ProceduresStore
             writeln: new WriteLn(outputStream, ouputNewLineSymbol),
             write: new Write(outputStream),
             readln: new ReadLn(input, outputStream, ouputNewLineSymbol),
+            read: new Read(input, outputStream, ouputNewLineSymbol),
         };
     }
 
