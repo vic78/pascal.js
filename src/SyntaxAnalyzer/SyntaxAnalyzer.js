@@ -381,8 +381,9 @@ export class SyntaxAnalyzer
         let procedureType = new ProcedureType(procedureSymbol);
         procedureType.signature = this.scanParametersList();
 
+        let currentTree = this.tree;
         this.treesCounter++;
-        this.tree = new Procedure(procedureSymbol, procedureType);
+        this.tree = new Procedure(procedureSymbol, procedureType, currentTree);
         this.trees[this.treesCounter] = this.tree;
         this.tree.name = identifier;
         let procedureName = this.tree.name.symbol.value.toLowerCase();
@@ -393,7 +394,7 @@ export class SyntaxAnalyzer
         this.scanBlock();
         this.accept(SymbolsCodes.semicolon);
 
-        this.trees[this.treesCounter - 1].procedures[procedureName] = this.tree;
+        this.trees[this.treesCounter - 1].functionsStore.addFunction(procedureName, this.tree);
         this.treesCounter--;
         this.tree = this.trees[this.treesCounter];
     }
@@ -409,8 +410,9 @@ export class SyntaxAnalyzer
         this.accept(SymbolsCodes.colon);
         functionType.returnType = this.scanType();
 
+        let currentTree = this.tree;
         this.treesCounter++;
-        this.tree = new Function(functionSymbol, functionType);
+        this.tree = new Function(functionSymbol, functionType, currentTree);
         this.trees[this.treesCounter] = this.tree;
         this.tree.name = identifier;
         let functionName = this.tree.name.symbol.value.toLowerCase();
@@ -418,7 +420,7 @@ export class SyntaxAnalyzer
         this.scanBlock();
         this.accept(SymbolsCodes.semicolon);
 
-        this.trees[this.treesCounter - 1].functions[functionName] = this.tree;
+        this.trees[this.treesCounter - 1].functionsStore.addFunction(functionName, this.tree);
         this.treesCounter--;
         this.tree = this.trees[this.treesCounter];
 

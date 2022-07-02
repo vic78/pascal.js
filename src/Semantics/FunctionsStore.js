@@ -1,14 +1,9 @@
-import { Ord } from './Functions/Ord.js';
-import { Chr } from './Functions/Chr.js';
-
 export class FunctionsStore
 {
-    constructor()
+    constructor(parentFunctionsStore = null)
     {
-        this.items = {
-            chr: new Chr(),
-            ord: new Ord()
-        };
+        this.parentFunctionsStore = parentFunctionsStore;
+        this.items = {};
     }
 
     addFunction(name, procedure)
@@ -22,6 +17,6 @@ export class FunctionsStore
 
         return this.items.hasOwnProperty(lowerCaseName) ?
             this.items[lowerCaseName] :
-            null;
+            ( this.parentFunctionsStore ? this.parentFunctionsStore.getFunction(name) : null);
     }
 };

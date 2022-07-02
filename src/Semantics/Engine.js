@@ -45,8 +45,8 @@ import { Less } from '../SyntaxAnalyzer/Tree/Relations/Less.js';
 import { Greater } from '../SyntaxAnalyzer/Tree/Relations/Greater.js';
 import { GreaterOrEqual } from '../SyntaxAnalyzer/Tree/Relations/GreaterOrEqual.js';
 import { LessOrEqual } from '../SyntaxAnalyzer/Tree/Relations/LessOrEqual.js';
-import { ProceduresStore } from './ProceduresStore.js';
 import { FunctionsStore } from './FunctionsStore.js';
+import { MainFunctionsStore } from './MainFunctionsStore.js';
 import { RuntimeError } from '../Errors/RuntimeError.js';
 import { ErrorsDescription } from '../Errors/ErrorsDescription.js';
 import { ErrorsCodes } from '../Errors/ErrorsCodes.js';
@@ -71,8 +71,7 @@ export class Engine
         this.scopes = [];
         this.currentScopeId = 0;
         this.scopes[this.currentScopeId] = new Scope();
-        this.proceduresStore = new ProceduresStore(config.input, config.outputStream, config.ouputNewLineSymbol);
-        this.functionsStore = new FunctionsStore();
+        this.functionsStore = new MainFunctionsStore(config.input, config.outputStream, config.ouputNewLineSymbol);
         this.errorsDescription = new ErrorsDescription();
     }
     /**
@@ -186,16 +185,9 @@ export class Engine
             }
             let lowerCaseName = name.toLowerCase();
 
-            let isDeclaredProcedure = this.tree.procedures.hasOwnProperty(lowerCaseName);
-            let procedure = isDeclaredProcedure ?
-                this.tree.procedures[lowerCaseName]:
-                this.proceduresStore.getProcedure(lowerCaseName);
-            if (procedure !== null) {
-                return new CallableVariable(procedure.type, procedure);
-            }
-            let isDeclaredFunction = this.tree.functions.hasOwnProperty(lowerCaseName);
-            let calledFunction = isDeclaredFunction ?
-                this.tree.functions[lowerCaseName]:
+            let declaredFunction = this.tree.functionsStore.getFunction(lowerCaseName);
+            let calledFunction = declaredFunction ?
+                declaredFunction :
                 this.functionsStore.getFunction(lowerCaseName);
             if (calledFunction !== null) {
                 return  new CallableVariable(calledFunction.type, calledFunction);

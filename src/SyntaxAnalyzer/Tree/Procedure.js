@@ -2,9 +2,9 @@ import { ProgramBase } from './ProgramBase.js';
 
 export class Procedure extends ProgramBase
 {
-    constructor(symbol, type = null)
+    constructor(symbol, type = null, parentFunction = null)
     {
-        super(symbol);
+        super(symbol, parentFunction);
         this.type = type;
     }
 };
