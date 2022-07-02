@@ -221,7 +221,7 @@ export class Engine
                 let procedureIdentifier = calledElem.name;
                 procedureName = procedureIdentifier.symbol.value.toLowerCase();
 
-                scope.addVariable(procedureIdentifier, calledElem.type.returnType);
+                scope.addVariable(procedureIdentifier, calledElem.type.returnType, null, null, true);
                 scope.callableName = calledElem.name.symbol.value;
             }
 

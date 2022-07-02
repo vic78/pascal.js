@@ -154,7 +154,20 @@ export class LexicalAnalyzer
 
                 case '/':
                     this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.slash);
+
+                    let commentCurrentChar = null;
+                    // skip comments
+                    if (this.char === '/') {
+                        do {
+                            commentCurrentChar = this.fileIO.nextCh();
+                        } while (commentCurrentChar !== '\n')
+
+                        this.char = this.fileIO.nextCh();
+                        this.skipWhiteSpaces();
+                        return this.scanSymbol();
+                    } else {
+                        return this.getSymbol(SymbolsCodes.slash);
+                    }
 
                 case '=':
                     this.char = this.fileIO.nextCh();
