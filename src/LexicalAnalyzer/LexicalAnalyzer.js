@@ -220,9 +220,14 @@ export class LexicalAnalyzer
                     return this.getSymbol(SymbolsCodes.rBracket);
 
                 case '{':
-                    this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.flPar);
+                    let flParCommentChar = null;
+                    do {
+                        flParCommentChar = this.fileIO.nextCh();
+                    } while (flParCommentChar !== '}')
 
+                    this.char = this.fileIO.nextCh();
+                    this.skipWhiteSpaces();
+                    return this.scanSymbol();
                 case '}':
                     this.char = this.fileIO.nextCh();
                     return this.getSymbol(SymbolsCodes.frPar);

@@ -235,7 +235,7 @@ export class Engine
                 procedureName = name;
             }
 
-            await this.addParametersToScope(identifierBranchExpression.parameters, calledElem.type.signature, scope);
+            await this.addParametersToScope(identifierBranchExpression.parameters, evaluatedParameters, calledElem.type.signature, scope);
             this.treesCounter++;
 
             this.tree = calledElem;
@@ -462,16 +462,13 @@ export class Engine
         }
     }
 
-    async addParametersToScope(parameters, signature, scope)
+    async addParametersToScope(parameters, evaluatedParameters, signature, scope)
     {
         if (signature instanceof UnboundedParametersList) {
             if (signature.byReference) {
                 scope.setParametersList(parameters);
             } else {
-                let parametersValues = await Promise.all(
-                    parameters.map(async (elem) => await this.evaluateExpression(elem))
-                );
-                scope.setParametersList(parametersValues);
+                scope.setParametersList(evaluatedParameters);
             }
         } else {
             let parametersCounter = 0;
@@ -491,7 +488,7 @@ export class Engine
                         }
                         scope.addVariableByReference(parameter, identifier);
                     } else {
-                        let result = await this.evaluateExpression(parameter);
+                        let result = evaluatedParameters[parametersCounter];
                         scope.addVariable(identifier, type);
                         scope.setValue(identifier, type, result.value, identifier);
                     }

@@ -8,7 +8,19 @@ export class FunctionsStore
 
     addFunction(name, procedure)
     {
-        this.items[name.toLowerCase()] = procedure;
+        let lcName = name.toLowerCase();
+        if (this.items.hasOwnProperty(lcName)) {
+            if (Array.isArray(this.items[lcName]))
+                this.items[lcName].push(procedure);
+            else {
+                let found = this.items[lcName];
+                this.items[lcName] = [
+                    found,
+                    procedure
+                ];
+            }
+        } else
+            this.items[lcName] = procedure;
     }
 
     getFunction(name, scope, parametersValues)
