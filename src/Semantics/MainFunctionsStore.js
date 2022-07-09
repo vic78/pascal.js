@@ -2,6 +2,8 @@ import { FunctionsStore } from './FunctionsStore.js';
 
 import { Ord } from './Functions/Ord.js';
 import { Chr } from './Functions/Chr.js';
+import { RandomInteger } from './Functions/Random/RandomInteger.js';
+import { RandomReal } from './Functions/Random/RandomReal.js';
 
 import { WriteLn } from './Procedures/WriteLn.js';
 import { Write } from './Procedures/Write.js';
@@ -13,8 +15,10 @@ export class MainFunctionsStore extends FunctionsStore
     constructor(input, outputStream, ouputNewLineSymbol)
     {
         super();
-        this.items.chr = new Chr();
-        this.items.ord = new Ord();
+        this.items.chr = new Chr;
+        this.items.ord = new Ord;
+        this.items.random = [ new RandomInteger, new RandomReal ];
+//        this.items.random = new RandomInteger;
 
         // Procedures
         this.items.writeln = new WriteLn(outputStream, ouputNewLineSymbol);
@@ -26,14 +30,5 @@ export class MainFunctionsStore extends FunctionsStore
     addFunction(name, procedure)
     {
         this.items[name.toLowerCase()] = procedure;
-    }
-
-    getFunction(name)
-    {
-        let lowerCaseName = name.toLowerCase();
-
-        return this.items.hasOwnProperty(lowerCaseName) ?
-            this.items[lowerCaseName] :
-            null;
     }
 };

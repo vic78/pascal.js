@@ -7,7 +7,6 @@ export class Chr extends FunctionItem
     constructor()
     {
         super();
-        this.returnType = new ScalarType(null, TypesIds.CHAR);
     }
 
     async innerRun(scope)

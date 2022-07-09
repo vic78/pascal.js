@@ -2,9 +2,9 @@ import { ProcedureItem } from './ProcedureItem.js';
 
 export class FunctionItem extends ProcedureItem
 {
-    constructor()
+    constructor(name = null)
     {
         super();
-        this.returnType = null;
+        this.name = name;
     }
 };

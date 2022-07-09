@@ -7,7 +7,6 @@ export class Ord extends FunctionItem
     constructor()
     {
         super();
-        this.returnType = new ScalarType(null, TypesIds.INTEGER);
     }
 
     async innerRun(scope)

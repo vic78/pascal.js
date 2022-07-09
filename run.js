@@ -19,20 +19,21 @@ var symbol = null;
 //}
 
 var syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
-try {
+//try {
     var tree = syntaxAnalyzer.analyze();
 //    console.dir(tree, { depth: null });
 
     var engine = new Engine(tree, config);
-    engine.run().catch((e) => {
-        if (e instanceof RuntimeError) {
-            fileIO.printListing(e);
-        }
-    });
+    engine.run()
+//            .catch((e) => {
+//        if (e instanceof RuntimeError) {
+//            fileIO.printListing(e);
+//        }
+//    });
 //    console.dir(engine.scopes, { depth: null });
 //    console.dir(engine.scopes[0].items, { depth: null });
-} catch (e) {
-    if (e instanceof RuntimeError) {
-        fileIO.printListing(e);
-    }
-}
+//} catch (e) {
+//    if (e instanceof RuntimeError) {
+//        fileIO.printListing(e);
+//    }
+//}

@@ -10,6 +10,7 @@ import { TypeDeclaration } from '../SyntaxAnalyzer/Tree/TypeDeclaration.js';
 import { ConstantDeclaration } from '../SyntaxAnalyzer/Tree/ConstantDeclaration.js';
 import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 import { ArrayType } from '../SyntaxAnalyzer/Tree/Types/ArrayType.js';
+import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
 import { Identifier } from '../SyntaxAnalyzer/Tree/Identifier.js';
 import { Function } from '../SyntaxAnalyzer/Tree/Function.js';
 import { Procedure } from '../SyntaxAnalyzer/Tree/Procedure.js';
@@ -114,7 +115,7 @@ export class Engine
                                 currentScope.addVariable(identifier, variablesDeclaration.variablesType, null, identifier);
                                 let initialValue = variablesDeclaration.initialValue;
                                 if (initialValue instanceof Constant) {
-                                    currentScope.setValue(identifier, initialValue.typeId, initialValue.symbol.value, initialValue);
+                                    currentScope.setValue(identifier, initialValue.type, initialValue.symbol.value, initialValue);
                                 }
                             } else {
                                 throw 'Identifier must be here!';
@@ -172,7 +173,7 @@ export class Engine
         return indexRing;
     }
 
-    async evaluateIdentifierBranch(identifierBranchExpression)
+    async evaluateIdentifierBranch(identifierBranchExpression, parametersValues = null)
     {
         if (identifierBranchExpression instanceof Identifier) {
             let currentScope = this.getCurrentScope();
@@ -185,18 +186,18 @@ export class Engine
             }
             let lowerCaseName = name.toLowerCase();
 
-            let declaredFunction = this.tree.functionsStore.getFunction(lowerCaseName);
+            let declaredFunction = this.tree.functionsStore.getFunction(lowerCaseName, currentScope, parametersValues);
             let calledFunction = declaredFunction ?
                 declaredFunction :
-                this.functionsStore.getFunction(lowerCaseName);
+                this.functionsStore.getFunction(lowerCaseName, currentScope, parametersValues);
             if (calledFunction !== null) {
-                return  new CallableVariable(calledFunction.type, calledFunction);
+                return  new CallableVariable(Array.isArray(calledFunction) ? new FunctionType(null) : calledFunction.type, calledFunction);
             }
             this.addError(ErrorsCodes.variableNotDeclared, `Element '${name}' not declared.`, identifierBranchExpression);
         } else if (identifierBranchExpression instanceof IndexedIdentifier) {
             let currentScope = this.getCurrentScope();
 
-            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier);
+            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier, parametersValues);
             if (!(arrayVariable instanceof ArrayVariable)) {
                 this.addError(ErrorsCodes.arrayExpected, 'Array expected', identifierBranchExpression);
             }
@@ -208,7 +209,12 @@ export class Engine
             let isDeclaredProcedure = null;
             let isDeclaredFunction = null;
 
-            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch);
+            let parameters = identifierBranchExpression.parameters;
+            let evaluatedParameters = await Promise.all(
+                parameters.map(async (elem) => await this.evaluateExpression(elem))
+            );
+
+            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParameters);
             let calledElem = returnedElem instanceof CallableVariable ?
                         returnedElem.value :
                         returnedElem;
@@ -216,13 +222,17 @@ export class Engine
             let currentScope = this.getCurrentScope();
             let scope = new Scope(currentScope);
             let procedureName = null;
-            if (calledElem instanceof FunctionItem ||
-                    calledElem instanceof Function) {
+
+            if (calledElem instanceof Function) {
                 let procedureIdentifier = calledElem.name;
                 procedureName = procedureIdentifier.symbol.value.toLowerCase();
-
                 scope.addVariable(procedureIdentifier, calledElem.type.returnType, null, null, true);
                 scope.callableName = calledElem.name.symbol.value;
+            } else if (calledElem instanceof FunctionItem) {
+                let name = calledElem.name;
+                scope.addVariable(name, calledElem.type.returnType, null, null, true);
+                scope.callableName = name;
+                procedureName = name;
             }
 
             await this.addParametersToScope(identifierBranchExpression.parameters, calledElem.type.signature, scope);
@@ -252,10 +262,10 @@ export class Engine
             this.tree = this.trees[this.treesCounter];
             return result;
         } else if (identifierBranchExpression instanceof GetByPointer) {
-            let pointerVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.pointer);
+            let pointerVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.pointer, parametersValues);
             return pointerVariable.variable;
         } else if (identifierBranchExpression instanceof TakeField) {
-            let baseExpression = await this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression);
+            let baseExpression = await this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression, parametersValues);
             let propertyIdentifier = identifierBranchExpression.subField;
             return baseExpression.getByPropertyIdentifier(propertyIdentifier);
         } else {
@@ -337,7 +347,7 @@ export class Engine
             let increment = null;
             let comparation = null;
             let typeId = currentValue.typeId;
-            let type = currentValue.type === false ? typeId : currentValue.type;
+            let type = currentValue.type;
             currentScope.setValue(variableIdentifier, type, currentValue.value, variableIdentifier);
             if (sentence.countDown) {
                 switch (typeId) {
@@ -403,7 +413,7 @@ export class Engine
             currentScope.cycleDepth++;
             let previousVal = typeId === TypesIds.ENUM ?
                 new EnumVariable(currentValue.value, type) :
-                new ScalarVariable(currentValue.value, typeId);
+                new ScalarVariable(currentValue.value, type);
             let canContinue = true;
             while (comparation(currentValue, lastValue) && canContinue) {
                 let result = await this.evaluateSentence(sentence.body);
@@ -432,7 +442,7 @@ export class Engine
                 let caseItem = sentence.cases[i];
                 for(let j = 0; j < caseItem.constants.length; j++) {
                     let constant = caseItem.constants[j];
-                    if (!currentScope.sameType(constant.typeId, switchValue.getType())) {
+                    if (constant.typeId !== switchValue.type.typeId) {
                         this.addError(ErrorsCodes.typesMismatch, 'The constant and the switch expression have different types', constant);
                     }
                     if (constant.symbol.value === switchValue.value) {

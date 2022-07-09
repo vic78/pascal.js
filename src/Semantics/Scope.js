@@ -42,7 +42,7 @@ export class Scope
 
     addVariable(identifier, type, value = null, treeNode = null, addResult = false)
     {
-        let name = identifier.symbol.value;
+        let name = identifier instanceof Identifier ? identifier.symbol.value : identifier;
         let lowerCaseName = name.toLowerCase();
         if (this.constants.hasOwnProperty(lowerCaseName)) {
             this.addError(ErrorsCodes.identifierAlreadyUsed, `Constant '${lowerCaseName}' declared.`, treeNode === null ? type : treeNode);
@@ -399,19 +399,10 @@ export class Scope
 
     sameType(typeA, typeB)
     {
-        if (Number.isInteger(typeA) &&
-            Number.isInteger(typeB)) {
-            return typeA === typeB;
-        } else if (Number.isInteger(typeA) &&
-            !Number.isInteger(typeB)) {
-            return typeA === typeB.typeId;
-        } else if (Number.isInteger(typeB) &&
-            !Number.isInteger(typeA)) {
-            return typeA.typeId === typeB;
-        } else if (typeA.constructor === typeB.constructor) {
-            if (typeA instanceof ScalarType) {
-                return typeA.typeId === typeB.typeId;
-            } else if (typeA instanceof EnumType) {
+        if (typeA instanceof ScalarType)
+            return typeA.typeId === typeB.typeId;
+        else if (typeA.constructor === typeB.constructor) {
+            if (typeA instanceof EnumType) {
                 return Object.is(typeA, typeB);
             } else if(typeA instanceof FunctionType ||
                     typeA instanceof ProcedureType){
