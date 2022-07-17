@@ -171,8 +171,12 @@ export class Scope
      *  Для ScalarVariable используется только typeId.
      *  В type передаётся тип или id типа.
      */
-    setValue(destination, type, value, treeNode = null)
+    setValue(destination, type, inputValue, treeNode = null)
     {
+        let value = inputValue instanceof ScalarVariable ||
+                inputValue instanceof EnumVariable ||
+                inputValue instanceof CallableVariable ? inputValue.value : inputValue;
+
         let identifier = null;
 
         if (destination instanceof Identifier) {
@@ -397,8 +401,11 @@ export class Scope
         }
     }
 
-    sameType(typeA, typeB)
+    sameType(notResolvedTypeA, notResolvedTypeB)
     {
+        let typeA = notResolvedTypeA instanceof AppliedNamedType ? this.resolveNamedType(notResolvedTypeA) : notResolvedTypeA;
+        let typeB = notResolvedTypeB instanceof AppliedNamedType ? this.resolveNamedType(notResolvedTypeB) : notResolvedTypeB;
+
         if (typeA instanceof ScalarType)
             return typeA.typeId === typeB.typeId;
         else if (typeA.constructor === typeB.constructor) {
@@ -491,6 +498,8 @@ export class Scope
         let lowerCaseName = name.toLowerCase();
         if (this.types.hasOwnProperty(lowerCaseName)) {
             return this.types[lowerCaseName];
+        } else if(this.parentScope) {
+            return this.parentScope.getType(name, treeNode);
         } else {
             this.addError(ErrorsCodes.typeNotDeclared, `Type '${lowerCaseName}' not declared.`, treeNode);
         }

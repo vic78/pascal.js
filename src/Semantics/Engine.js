@@ -490,7 +490,9 @@ export class Engine
                     } else {
                         let result = evaluatedParameters[parametersCounter];
                         scope.addVariable(identifier, type);
-                        scope.setValue(identifier, type, result.value, identifier);
+//                        console.log(result);
+
+                        scope.setValue(identifier, type, result, identifier);
                     }
                     parametersCounter++;
                 }
