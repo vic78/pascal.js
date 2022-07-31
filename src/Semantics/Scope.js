@@ -1,5 +1,6 @@
 import { TypesIds } from './Variables/TypesIds.js';
 import { ScalarVariable } from './Variables/ScalarVariable.js';
+import { TypeVariable } from './Variables/TypeVariable.js';
 import { EnumVariable } from './Variables/EnumVariable.js';
 import { ArrayVariable } from './Variables/ArrayVariable.js';
 import { PointerVariable } from './Variables/PointerVariable.js';
@@ -9,6 +10,10 @@ import { RuntimeError } from '../Errors/RuntimeError.js';
 import { ErrorsDescription } from '../Errors/ErrorsDescription.js';
 import { ErrorsCodes } from '../Errors/ErrorsCodes.js';
 import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
+import { BooleanType } from '../SyntaxAnalyzer/Tree/Types/Scalar/BooleanType.js';
+import { CharType } from '../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js';
+import { IntegerType } from '../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js';
+import { TypeBase } from '../SyntaxAnalyzer/Tree/Types/TypeBase.js';
 import { AppliedNamedType } from '../SyntaxAnalyzer/Tree/Types/AppliedNamedType.js';
 import { EnumType } from '../SyntaxAnalyzer/Tree/Types/EnumType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
@@ -23,6 +28,11 @@ import { Constant } from '../SyntaxAnalyzer/Tree/Constant.js';
 import { UnaryMinus } from '../SyntaxAnalyzer/Tree/UnaryMinus.js';
 import { ProcedureItem } from './ProcedureItem.js';
 import { FunctionItem } from './FunctionItem.js';
+import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/GeneralizedTypeBase.js'
+import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js'
+import { IndexedArrayType } from '../SyntaxAnalyzer/Tree/Types/Generalized/IndexedArrayType.js'
+import { RangeableType } from '../SyntaxAnalyzer/Tree/Types/Generalized/RangeableType.js'
+import { UnindexedArrayType } from '../SyntaxAnalyzer/Tree/Types/Generalized/UnindexedArrayType.js'
 
 
 export class Scope
@@ -91,6 +101,8 @@ export class Scope
             resolvedType instanceof ProcedureType ||
             resolvedType instanceof RecordType) {
             return this.createDefaultVariable(resolvedType);
+        } else if (resolvedType instanceof TypeAsData) {
+            return new TypeVariable(resolvedType.type, value);
         }
     }
 
@@ -227,6 +239,14 @@ export class Scope
                     } else {
                         this.addTypeMismatchError(type, item, treeNode);
                     }
+            } else if (item instanceof TypeVariable &&
+                    type instanceof TypeAsData) {
+
+                if (this.typeIncluded(item.variableType, value.valueType)) {
+                    item.valueType = value.valueType;
+                } else {
+                    this.addTypeMismatchError(item.variableType, value, treeNode);
+                }
             } else {
                 this.addError(ErrorsCodes.typesMismatch, null, treeNode);
             }
@@ -377,7 +397,10 @@ export class Scope
             let name = identifier.symbol.value;
             let lowerCaseName = name.toLowerCase();
 
-            if (this.constants.hasOwnProperty(lowerCaseName)) {
+            if (this.types.hasOwnProperty(lowerCaseName)) {
+                let foundType = this.types[lowerCaseName];
+                return new TypeVariable(foundType, foundType);
+            } else if (this.constants.hasOwnProperty(lowerCaseName)) {
                 return this.constants[lowerCaseName];
             } else if (this.items.hasOwnProperty(lowerCaseName)) {
                 return this.items[lowerCaseName];
@@ -625,6 +648,26 @@ export class Scope
             variable.rightIntegerIndex = maxIntegerIndex;
 
             return variable;
+        }
+    }
+
+    /**
+     * @param {GeneralizedTypeBase} generalizedType
+     * @param {TypeBase} type
+     * @returns {boolean}
+     */
+    typeIncluded(generalizedType, type)
+    {
+        if (generalizedType instanceof RangeableType) {
+            return type instanceof BooleanType ||
+                    type instanceof CharType ||
+                    type instanceof IntegerType ||
+                    type instanceof EnumType
+            ;
+        } else if (generalizedType instanceof UnindexedArrayType) {
+            return type instanceof ArrayType;
+        } else {
+            return this.sameType(generalizedType, type);
         }
     }
 }

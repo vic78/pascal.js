@@ -9,6 +9,8 @@ import { VariablesDeclaration } from '../SyntaxAnalyzer/Tree/VariablesDeclaratio
 import { TypeDeclaration } from '../SyntaxAnalyzer/Tree/TypeDeclaration.js';
 import { ConstantDeclaration } from '../SyntaxAnalyzer/Tree/ConstantDeclaration.js';
 import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
+import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/GeneralizedTypeBase.js';
+import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js';
 import { ArrayType } from '../SyntaxAnalyzer/Tree/Types/ArrayType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
 import { Identifier } from '../SyntaxAnalyzer/Tree/Identifier.js';
@@ -178,8 +180,7 @@ export class Engine
         if (identifierBranchExpression instanceof Identifier) {
             let currentScope = this.getCurrentScope();
             let name = identifierBranchExpression.symbol.value;
-            let result = null;
-            result = currentScope.getElementByIdentifier(identifierBranchExpression);
+            let result = currentScope.getElementByIdentifier(identifierBranchExpression);
 
             if (result !== null) {
                 return result;
@@ -206,8 +207,6 @@ export class Engine
             return arrayVariable.getByIndexRing(identifierBranchExpression.indexRing);
 
         } else if (identifierBranchExpression instanceof FunctionCall) {
-            let isDeclaredProcedure = null;
-            let isDeclaredFunction = null;
 
             let parameters = identifierBranchExpression.parameters;
             let evaluatedParameters = await Promise.all(
@@ -230,8 +229,6 @@ export class Engine
                 scope.callableName = calledElem.name.symbol.value;
             } else if (calledElem instanceof FunctionItem) {
                 let name = calledElem.name;
-                scope.addVariable(name, calledElem.type.returnType, null, null, true);
-                scope.callableName = name;
                 procedureName = name;
             }
 
@@ -489,6 +486,9 @@ export class Engine
                         scope.addVariableByReference(parameter, identifier);
                     } else {
                         let result = evaluatedParameters[parametersCounter];
+                        if (type instanceof GeneralizedTypeBase) {
+                            type = result.type;
+                        }
                         scope.addVariable(identifier, type);
                         scope.setValue(identifier, type, result, identifier);
                     }

@@ -2,6 +2,10 @@ import { FunctionsStore } from './FunctionsStore.js';
 
 import { Ord } from './Functions/Ord.js';
 import { Chr } from './Functions/Chr.js';
+import { LowArray } from './Functions/Low/LowArray.js';
+import { LowType } from './Functions/Low/LowType.js';
+import { HighArray } from './Functions/High/HighArray.js';
+import { HighType } from './Functions/High/HighType.js';
 import { RandomInteger } from './Functions/Random/RandomInteger.js';
 import { RandomReal } from './Functions/Random/RandomReal.js';
 
@@ -19,6 +23,8 @@ export class MainFunctionsStore extends FunctionsStore
         this.items.chr = new Chr;
         this.items.ord = new Ord;
         this.items.random = [ new RandomInteger, new RandomReal ];
+        this.items.low = [ new LowArray, new LowType ];
+        this.items.high = [ new HighArray, new HighType ];
 
         // Procedures
         this.items.writeln = new WriteLn(outputStream, ouputNewLineSymbol);

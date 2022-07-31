@@ -29,7 +29,8 @@ try {
         if (e instanceof RuntimeError) {
             fileIO.printListing(e);
         }
-    });
+    })
+    ;
 //    console.dir(engine.scopes, { depth: null });
 //    console.dir(engine.scopes[0].items, { depth: null });
 } catch (e) {

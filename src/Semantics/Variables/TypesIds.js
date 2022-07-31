@@ -10,5 +10,6 @@ export const TypesIds = {
     POINTER: 8,
     APPLIED_NAMED: 9,
     PROCEDURE: 10,
-    FUNCTION: 11
+    FUNCTION: 11,
+    TYPE: 12
 };

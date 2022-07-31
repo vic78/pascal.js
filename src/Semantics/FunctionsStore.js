@@ -1,5 +1,12 @@
+import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/GeneralizedTypeBase.js';
+import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js';
+import { TypeBase } from '../SyntaxAnalyzer/Tree/Types/TypeBase.js';
+
 export class FunctionsStore
 {
+    /**
+     * @param {FunctionsStore|null} [parentFunctionsStore=null]
+     */
     constructor(parentFunctionsStore = null)
     {
         this.parentFunctionsStore = parentFunctionsStore;
@@ -50,13 +57,22 @@ export class FunctionsStore
                 }
 
                 for (let i = 0; i < typesArray.length; i++) {
-                    if (!scope.sameType(typesArray[i], parametersValues[i])) {
+
+                    if ( typesArray[i] instanceof GeneralizedTypeBase &&
+                        !scope.typeIncluded(typesArray[i], parametersValues[i].type)) {
+                        return false;
+                    } else if(typesArray[i] instanceof TypeBase &&
+                        !scope.sameType(typesArray[i], parametersValues[i])) {
+                        return false;
+                    } else if (typesArray[i] instanceof TypeAsData &&
+                        !scope.typeIncluded(typesArray[i].type, parametersValues[i].valueType)) {
                         return false;
                     }
                 }
                 return true;
             });
-            return filtered.length > 0 ? filtered[0] : this.parentFunctionsStore.getFunction(name);
+            return filtered.length > 0 ? filtered[0] :
+                (this.parentFunctionStore ? this.parentFunctionsStore.getFunction(name) : null);
         } else {
             return found;
         }

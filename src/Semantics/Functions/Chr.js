@@ -1,6 +1,7 @@
 import { FunctionItem } from '../FunctionItem.js';
 import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
 import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType.js'
+import { CharType } from '../../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js'
 
 export class Chr extends FunctionItem
 {
@@ -16,6 +17,9 @@ export class Chr extends FunctionItem
         let code = codeParameter.value;
         let char = String.fromCharCode(code);
 
-        scope.setValue('Chr', TypesIds.CHAR, char);
+        let name = 'chr';
+        scope.addVariable(name, this.type.returnType, null, null, true);
+        scope.callableName = name;
+        scope.setValue(new Identifier(new Symbol(null, null, name)), new CharType, char);
     }
 };

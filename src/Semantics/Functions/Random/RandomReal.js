@@ -21,6 +21,9 @@ export class RandomReal extends FunctionItem
     async innerRun(scope)
     {
         let randomValue = Math.random();
-        scope.setValue(new Identifier(new Symbol(null, null, 'random')), this.type.returnType, randomValue);
+        let name = 'random';
+        scope.addVariable(name, this.type.returnType, null, null, true);
+        scope.callableName = name;
+        scope.setValue(new Identifier(new Symbol(null, null, name)), this.type.returnType, randomValue);
     }
 };

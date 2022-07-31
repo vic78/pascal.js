@@ -552,7 +552,8 @@ export class SyntaxAnalyzer
                 let sentence = this.scanSentence();
                 compoundOperator.sentences.push(sentence);
 
-                this.accept(SymbolsCodes.semicolon);
+                if (this.symbol.symbolCode !== SymbolsCodes.untilSy)
+                    this.accept(SymbolsCodes.semicolon);
             }
 
             this.accept(SymbolsCodes.untilSy);

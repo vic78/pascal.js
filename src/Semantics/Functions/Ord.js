@@ -1,6 +1,7 @@
 import { FunctionItem } from '../FunctionItem.js';
 import { TypesIds } from '../../Semantics/Variables/TypesIds.js';
 import { ScalarType } from '../../SyntaxAnalyzer/Tree/Types/ScalarType.js'
+import { IntegerType } from '../../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js'
 
 export class Ord extends FunctionItem
 {
@@ -16,6 +17,9 @@ export class Ord extends FunctionItem
         let char = charParameter.value;
         let code = char.charCodeAt(0);
 
-        scope.setValue('Ord', TypesIds.INTEGER, code);
+        let name = 'ord';
+        scope.addVariable(name, this.type.returnType, null, null, true);
+        scope.callableName = name;
+        scope.setValue(new Identifier(new Symbol(null, null, name)), new CharType, code);
     }
 };

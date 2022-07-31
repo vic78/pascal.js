@@ -33,6 +33,9 @@ export class RandomInteger extends FunctionItem
         let positive = Math.abs(limit.value);
         let res = Math.floor( Math.random() * positive );
 
-        scope.setValue(new Identifier(new Symbol(null, null, 'random')), this.type.returnType, res === 0 ? 0 : sign * res);
+        let name = 'random';
+        scope.addVariable(name, this.type.returnType, null, null, true);
+        scope.callableName = name;
+        scope.setValue(new Identifier(new Symbol(null, null, name)), this.type.returnType, res === 0 ? 0 : sign * res);
     }
 };
