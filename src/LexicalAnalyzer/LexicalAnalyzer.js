@@ -139,36 +139,55 @@ export class LexicalAnalyzer
                     } else {
                         return this.getSymbol(SymbolsCodes.greater);
                     }
-
                 case '-':
                     this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.minus);
-
+                    if (this.char === '=') {
+                        this.currentWord += this.char;
+                        this.char = this.fileIO.nextCh();
+                        return this.getSymbol(SymbolsCodes.minusAssign);
+                    } else {
+                        return this.getSymbol(SymbolsCodes.minus);
+                    }
                 case '+':
                     this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.plus);
+                    if (this.char === '=') {
+                        this.currentWord += this.char;
+                        this.char = this.fileIO.nextCh();
+                        return this.getSymbol(SymbolsCodes.plusAssign);
+                    } else {
+                        return this.getSymbol(SymbolsCodes.plus);
+                    }
 
                 case '*':
                     this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.star);
-
+                    if (this.char === '=') {
+                        this.currentWord += this.char;
+                        this.char = this.fileIO.nextCh();
+                        return this.getSymbol(SymbolsCodes.starAssign);
+                    } else {
+                        return this.getSymbol(SymbolsCodes.star);
+                    }
                 case '/':
                     this.char = this.fileIO.nextCh();
-
-                    let commentCurrentChar = null;
-                    // skip comments
-                    if (this.char === '/') {
-                        do {
-                            commentCurrentChar = this.fileIO.nextCh();
-                        } while (commentCurrentChar !== '\n')
-
+                    if (this.char === '=') {
+                        this.currentWord += this.char;
                         this.char = this.fileIO.nextCh();
-                        this.skipWhiteSpaces();
-                        return this.scanSymbol();
+                        return this.getSymbol(SymbolsCodes.slashAssign);
                     } else {
-                        return this.getSymbol(SymbolsCodes.slash);
-                    }
+                        let commentCurrentChar = null;
+                        // skip comments
+                        if (this.char === '/') {
+                            do {
+                                commentCurrentChar = this.fileIO.nextCh();
+                            } while (commentCurrentChar !== '\n')
 
+                            this.char = this.fileIO.nextCh();
+                            this.skipWhiteSpaces();
+                            return this.scanSymbol();
+                        } else {
+                            return this.getSymbol(SymbolsCodes.slash);
+                        }
+                    }
                 case '=':
                     this.char = this.fileIO.nextCh();
                     return this.getSymbol(SymbolsCodes.equal);

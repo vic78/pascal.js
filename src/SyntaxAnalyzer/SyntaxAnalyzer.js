@@ -507,7 +507,12 @@ export class SyntaxAnalyzer
         if (this.symbol.symbolCode === SymbolsCodes.ident) {
             let identifierBranch = this.scanIdentifierBranch();
 
-            if (this.symbol.symbolCode === SymbolsCodes.assign) {
+            if (this.symbol.symbolCode === SymbolsCodes.assign ||
+                this.symbol.symbolCode === SymbolsCodes.plusAssign ||
+                this.symbol.symbolCode === SymbolsCodes.minusAssign ||
+                this.symbol.symbolCode === SymbolsCodes.starAssign ||
+                this.symbol.symbolCode === SymbolsCodes.slashAssign
+                    ) {
                 let assignSymbol = this.symbol;
                 this.nextSym();
                 return new Assignation(assignSymbol, identifierBranch, this.scanExpression());

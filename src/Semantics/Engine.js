@@ -279,6 +279,56 @@ export class Engine
             let sourceExpression = sentence.sourceExpression;
             let expressionResult = await this.evaluateExpression(sourceExpression);
             let type = expressionResult.getType();
+            let operationSymbolCode = sentence.symbol.symbolCode;
+            switch (operationSymbolCode) {
+                case SymbolsCodes.plusAssign:
+                case SymbolsCodes.minusAssign:
+                case SymbolsCodes.slashAssign:
+                case SymbolsCodes.starAssign:
+                    let destinationResult = await this.evaluateSimpleExpression(destination);
+                    let destinationType = destinationResult.getType();
+                    let destinationTypeId = destinationType.typeId;
+                    let sourceTypeId = type.typeId;
+                    switch (sourceTypeId) {
+                        case TypesIds.REAL:
+                        case TypesIds.INTEGER:
+                        break;
+                        default:
+                            this.addError(ErrorsCodes.typesMismatch, 'Non-numeric source for assign operator', sentence);
+                    }
+                    switch (destinationType.typeId) {
+                        case TypesIds.REAL:
+                            break;
+                        case TypesIds.INTEGER:
+                            if (sourceTypeId.typeId === TypesIds.REAL ||
+                                operationSymbolCode === SymbolsCodes.slashAssign) {
+                                this.addError(ErrorsCodes.typesMismatch, 'Cannot assign floating point value to an integer variable', sentence);
+                            }
+                            break;
+                        default:
+                            this.addError(ErrorsCodes.typesMismatch, 'Non-numeric destination for assign operator', sentence);
+                    }
+
+                    let result = null;
+                    switch (operationSymbolCode) {
+                        case SymbolsCodes.plusAssign:
+                            result = destinationResult.value + expressionResult.value;
+                            break;
+                        case SymbolsCodes.minusAssign:
+                            result = destinationResult.value - expressionResult.value;
+                            break;
+                        case SymbolsCodes.slashAssign:
+                            result = destinationResult.value / expressionResult.value;
+                            break;
+                        case SymbolsCodes.starAssign:
+                            result = destinationResult.value * expressionResult.value;
+                    }
+
+                    expressionResult = new ScalarVariable(result, destinationTypeId);
+                    break;
+                default:
+                case SymbolsCodes.assign:
+            }
 
             if (destination instanceof TakeField) {
                 let recordVariable = await this.evaluateIdentifierBranch(destination.baseExpression);
