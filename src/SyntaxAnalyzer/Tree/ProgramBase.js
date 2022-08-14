@@ -11,6 +11,7 @@ export class ProgramBase extends TreeNodeBase
         this.functionsStore = new FunctionsStore(parentFunction instanceof ProgramBase ? parentFunction.functionsStore : null);
         this.sentences = [];
         this.types = [];
+        this.constants = [];
         this.parentFunction = parentFunction;
     }
 

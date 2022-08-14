@@ -122,23 +122,35 @@ export class SyntaxAnalyzer
 
     scanBlock()
     {
-        this.labelPart();
-        this.constPart();
-        this.typePart();
-        this.varPart();
-        this.procFuncPart();
+        while (this.symbol.symbolCode !== SymbolsCodes.beginSy) {
+            switch (this.symbol.symbolCode) {
+                case SymbolsCodes.constSy:
+                    this.constPart();
+                    break;
+                case SymbolsCodes.typeSy:
+                    this.typePart();
+                    break;
+                case SymbolsCodes.varSy:
+                    this.varPart();
+                    break;
+                case SymbolsCodes.procedureSy:
+                    this.scanProcedure();
+                    break;
+                case SymbolsCodes.functionSy:
+                    this.scanFunction();
+                    break;
+                default:
+                    let errorText = `Symbol 'begin' expecsted but '${this.symbol.stringValue}' found.`;
+                    this.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol);
+            }
+        }
+
         this.statementPart();
-    }
-
-    labelPart()
-    {
-
     }
 
     constPart()
     {
         if (this.symbol.symbolCode === SymbolsCodes.constSy) {
-            this.tree.constants = [];
             this.nextSym();
             do {
                 let identSymbol = this.symbol;
@@ -161,7 +173,6 @@ export class SyntaxAnalyzer
 
     typePart()
     {
-        this.tree.types = [];
         if (this.symbol.symbolCode === SymbolsCodes.typeSy) {
             this.nextSym();
             do {
@@ -355,20 +366,6 @@ export class SyntaxAnalyzer
 
             return new RecordType(recordSymbol, recordElems);
 
-        }
-    }
-
-    procFuncPart()
-    {
-        while (this.symbol.symbolCode === SymbolsCodes.procedureSy ||
-                this.symbol.symbolCode === SymbolsCodes.functionSy) {
-            switch (this.symbol.symbolCode) {
-                case SymbolsCodes.procedureSy:
-                    this.scanProcedure();
-                    break;
-                case SymbolsCodes.functionSy:
-                    this.scanFunction();
-            }
         }
     }
 
