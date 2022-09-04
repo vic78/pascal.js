@@ -8,7 +8,7 @@ import { TypeBase } from '../../SyntaxAnalyzer/Tree/Types/TypeBase.js';
 export class TypeVariable extends BaseVariable
 {
     /**
-     * @param {TypeBase|GeneralizedTypeBase} variableType
+     * @param {GeneralizedTypeBase} variableType
      * @param {TypeBase|null} valueType
      */
     constructor(variableType, valueType = null)
@@ -17,7 +17,7 @@ export class TypeVariable extends BaseVariable
         this.typeId = TypesIds.TYPE;
         this.variableType = variableType;
         this.valueType = valueType;
-        this.type = new TypeAsData(variableType);
+        this.type = variableType;
     }
 
     clone()

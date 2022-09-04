@@ -1,9 +1,9 @@
-import { TypeBase } from '../TypeBase.js';
+import { GeneralizedTypeBase } from './GeneralizedTypeBase.js';
 
 export class TypeAsData
 {
     /**
-     * @param {TypeBase} type
+     * @param {GeneralizedTypeBase} type
      */
     constructor(type = null)
     {

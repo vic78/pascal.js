@@ -175,7 +175,7 @@ export class Engine
         return indexRing;
     }
 
-    async evaluateIdentifierBranch(identifierBranchExpression, parametersValues = null)
+    async evaluateIdentifierBranch(identifierBranchExpression, parametersTypes = null, expectedType = null)
     {
         if (identifierBranchExpression instanceof Identifier) {
             let currentScope = this.getCurrentScope();
@@ -187,10 +187,10 @@ export class Engine
             }
             let lowerCaseName = name.toLowerCase();
 
-            let declaredFunction = this.tree.functionsStore.getFunction(lowerCaseName, currentScope, parametersValues);
+            let declaredFunction = this.tree.functionsStore.getFunction(lowerCaseName, currentScope, parametersTypes, expectedType);
             let calledFunction = declaredFunction ?
                 declaredFunction :
-                this.functionsStore.getFunction(lowerCaseName, currentScope, parametersValues);
+                this.functionsStore.getFunction(lowerCaseName, currentScope, parametersTypes, expectedType);
             if (calledFunction !== null) {
                 return  new CallableVariable(Array.isArray(calledFunction) ? new FunctionType(null) : calledFunction.type, calledFunction);
             }
@@ -198,7 +198,7 @@ export class Engine
         } else if (identifierBranchExpression instanceof IndexedIdentifier) {
             let currentScope = this.getCurrentScope();
 
-            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier, parametersValues);
+            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier, parametersTypes);
             if (!(arrayVariable instanceof ArrayVariable)) {
                 this.addError(ErrorsCodes.arrayExpected, 'Array expected', identifierBranchExpression);
             }
@@ -213,7 +213,12 @@ export class Engine
                 parameters.map(async (elem) => await this.evaluateExpression(elem))
             );
 
-            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParameters);
+            let evaluatedParametersTypes = [];
+            if (Array.isArray(evaluatedParameters)) {
+                evaluatedParametersTypes = evaluatedParameters.map((elem) => elem.type);
+            }
+
+            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParametersTypes);
             let calledElem = returnedElem instanceof CallableVariable ?
                         returnedElem.value :
                         returnedElem;
@@ -259,10 +264,10 @@ export class Engine
             this.tree = this.trees[this.treesCounter];
             return result;
         } else if (identifierBranchExpression instanceof GetByPointer) {
-            let pointerVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.pointer, parametersValues);
+            let pointerVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.pointer, parametersTypes);
             return pointerVariable.variable;
         } else if (identifierBranchExpression instanceof TakeField) {
-            let baseExpression = await this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression, parametersValues);
+            let baseExpression = await this.evaluateIdentifierBranch(identifierBranchExpression.baseExpression, parametersTypes);
             let propertyIdentifier = identifierBranchExpression.subField;
             return baseExpression.getByPropertyIdentifier(propertyIdentifier);
         } else {
@@ -276,8 +281,10 @@ export class Engine
 
         if (sentence instanceof Assignation) {
             let destination = sentence.destination;
+            let destinationResult = await this.evaluateSimpleExpression(destination);
+            let expectedType = destinationResult.type;
             let sourceExpression = sentence.sourceExpression;
-            let expressionResult = await this.evaluateExpression(sourceExpression);
+            let expressionResult = await this.evaluateExpression(sourceExpression, expectedType);
             let type = expressionResult.getType();
             let operationSymbolCode = sentence.symbol.symbolCode;
             switch (operationSymbolCode) {
@@ -285,7 +292,6 @@ export class Engine
                 case SymbolsCodes.minusAssign:
                 case SymbolsCodes.slashAssign:
                 case SymbolsCodes.starAssign:
-                    let destinationResult = await this.evaluateSimpleExpression(destination);
                     let destinationType = destinationResult.getType();
                     let destinationTypeId = destinationType.typeId;
                     let sourceTypeId = type.typeId;
@@ -329,6 +335,67 @@ export class Engine
                 default:
                 case SymbolsCodes.assign:
             }
+
+            if (expressionResult instanceof CallableVariable) {
+                let func = expressionResult.value;
+                let funcType = func.type;
+                let funcReturnType = funcType.returnType;
+
+                if (!this.functionStore,checkType(expectedType, funcType, currentScope) &&
+                    this.functionStore,checkType(expectedType, funcReturnType, currentScope)) {
+
+                }
+
+                expressionResult.type.returnType) {
+
+                console.log(expressionResult);
+            }
+//            let calledElem = returnedElem instanceof CallableVariable ?
+//                        returnedElem.value :
+//                        returnedElem;
+//
+//            let currentScope = this.getCurrentScope();
+//            let scope = new Scope(currentScope);
+//            let procedureName = null;
+//
+//            if (calledElem instanceof Function) {
+//                let procedureIdentifier = calledElem.name;
+//                procedureName = procedureIdentifier.symbol.value.toLowerCase();
+//                scope.addVariable(procedureIdentifier, calledElem.type.returnType, null, null, true);
+//                scope.callableName = calledElem.name.symbol.value;
+//            } else if (calledElem instanceof FunctionItem) {
+//                let name = calledElem.name;
+//                procedureName = name;
+//            }
+//
+//            await this.addParametersToScope(identifierBranchExpression.parameters, evaluatedParameters, calledElem.type.signature, scope);
+//            this.treesCounter++;
+//
+//            this.tree = calledElem;
+//            this.trees[this.treesCounter] = this.tree;
+//            this.currentScopeId++;
+//            this.scopes[this.currentScopeId] = scope;
+//
+//            await this.run();
+//
+//            if (typeof calledElem.innerRun === 'function' ) {
+//                await calledElem.innerRun(scope, this);
+//            }
+//
+//            let result = null;
+//            if (calledElem instanceof FunctionItem ||
+//                    calledElem instanceof Function) {
+//                result = scope.getVariable(procedureName);
+//            }
+//
+//            delete this.scopes[this.currentScopeId];
+//
+//            this.currentScopeId--;
+//            this.treesCounter--;
+//            this.tree = this.trees[this.treesCounter];
+//            return result;
+
+
 
             if (destination instanceof TakeField) {
                 let recordVariable = await this.evaluateIdentifierBranch(destination.baseExpression);
@@ -548,7 +615,7 @@ export class Engine
         }
     }
 
-    async evaluateExpression(expression)
+    async evaluateExpression(expression, expectedType = null)
     {
         if (expression instanceof GetPointer) {
             let indentifierBranch = expression.identifier;
@@ -658,11 +725,11 @@ export class Engine
 
             return new ScalarVariable(result, typeId)
         } else {
-            return await this.evaluateSimpleExpression(expression);
+            return await this.evaluateSimpleExpression(expression, expectedType);
         }
     }
 
-    async evaluateSimpleExpression(expression)
+    async evaluateSimpleExpression(expression, expectedType = null)
     {
         if (expression instanceof Addition ||
                 expression instanceof Subtraction) {
@@ -688,11 +755,11 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else {
-            return await this.evaluateTerm(expression);
+            return await this.evaluateTerm(expression, expectedType);
         }
     }
 
-    async evaluateTerm(expression)
+    async evaluateTerm(expression, expectedType = null)
     {
         if (expression instanceof Not) {
             let term = await this.evaluateTerm(expression.value);
@@ -737,11 +804,11 @@ export class Engine
 
             return new ScalarVariable(result, typeId);
         } else {
-            return await this.evaluateMultiplier(expression);
+            return await this.evaluateMultiplier(expression, expectedType);
         }
     }
 
-    async evaluateMultiplier(expression)
+    async evaluateMultiplier(expression, expectedType = null)
     {
         if (expression instanceof Constant) {
             return new ScalarVariable(expression.symbol.value, expression.typeId);
@@ -751,7 +818,10 @@ export class Engine
                 expression instanceof GetByPointer ||
                 expression instanceof TakeField) {
 
-            return await this.evaluateIdentifierBranch(expression);
+
+//            console.log('expectedType');
+//            console.log(expectedType);
+            return await this.evaluateIdentifierBranch(expression, null, expectedType);
         } else {
             return await this.evaluateExpression(expression);
         }

@@ -2,9 +2,9 @@ import { ProgramBase } from '../SyntaxAnalyzer/Tree/ProgramBase.js';
 
 export class ProcedureItem extends ProgramBase
 {
-    constructor()
+    constructor(symbol = null)
     {
-        super();
+        super(symbol);
         this.vars = [];
         this.signature = [];
         this.sentences = [];
