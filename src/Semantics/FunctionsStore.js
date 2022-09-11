@@ -41,6 +41,8 @@ export class FunctionsStore
      */
     getFunction(name, scope, parametersValuesTypes = null, expectedType = null)
     {
+        let parametersValuesTypesRefs = [];
+
         if (parametersValuesTypes === null) {
 
             // Требуется функция типа expectedType
@@ -53,6 +55,7 @@ export class FunctionsStore
                 for (let i = 0; i < signature.length; i++) {
                     for (let j = 0; j < signature[i].identifiers.length; j++) {
                         parametersValuesTypes[i + j] = signature[i].type;
+                        parametersValuesTypesRefs[i+j] = signature[i].byReference;
                     }
                 }
             }
@@ -91,9 +94,11 @@ export class FunctionsStore
                     return false;
 
                 let typesArray = [];
+                let typesArrayRefs = [];
                 for (let i = 0; i < signature.length; i++) {
                     for (let j = 0; j < signature[i].identifiers.length; j++) {
                         typesArray[i + j] = signature[i].type;
+                        typesArrayRefs[i + j] = signature[i].byReference;
                     }
                 }
 
@@ -107,7 +112,10 @@ export class FunctionsStore
 
                 for (let i = 0; i < typesArray.length; i++) {
 
-                    if (!scope.checkType(typesArray[i], parametersValuesTypes[i])) {
+                    if (!scope.checkType(typesArray[i], parametersValuesTypes[i]) ||
+                        typesArrayRefs.length > 0 &&
+                        parametersValuesTypesRefs.length > 0 &&
+                        typesArrayRefs[i] !== parametersValuesTypesRefs[i]) {
                         return false;
                     }
                 }

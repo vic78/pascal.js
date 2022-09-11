@@ -183,20 +183,22 @@ export class Engine
     {
         let expressionResult = await this.evaluateIdentifierBranch(identifierBranchExpression, parametersTypes, expectedType);
 
-        if (expressionResult instanceof CallableVariable) {
+        while (expressionResult instanceof CallableVariable) {
             let currentScope = this.getCurrentScope();
             let func = expressionResult.value;
             let funcType = func.type;
             let funcReturnType = funcType.returnType;
 
-            if ((!currentScope.checkType(expectedType, funcType) &&
-                currentScope.checkType(expectedType, funcReturnType) ||
-                expectedType === null &&
-                funcType instanceof ProcedureType
-                )&&
+            if (
                 Array.isArray(funcType.signature) &&
-                funcType.signature.length === 0) {
-
+                funcType.signature.length === 0 &&
+                    expectedType === null ||
+                    !currentScope.checkType(expectedType, funcType) &&
+                    (
+                        funcType instanceof ProcedureType ||
+                        currentScope.checkType(expectedType, funcReturnType)
+                    )
+            ) {
                 let scope = new Scope(currentScope);
                 let procedureName = null;
 
@@ -235,7 +237,9 @@ export class Engine
                 this.treesCounter--;
                 this.tree = this.trees[this.treesCounter];
 
-                return result;
+                expressionResult = result;
+            } else {
+                break;
             }
 
         }
@@ -349,7 +353,7 @@ export class Engine
 
         if (sentence instanceof Assignation) {
             let destination = sentence.destination;
-            let destinationResult = await this.evaluateSimpleExpression(destination);
+            let destinationResult = await this.evaluateIdentifierBranch(destination);
             let expectedType = destinationResult.type;
             let sourceExpression = sentence.sourceExpression;
             let expressionResult = await this.evaluateExpression(sourceExpression, expectedType);
