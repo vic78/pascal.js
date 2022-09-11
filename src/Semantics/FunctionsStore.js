@@ -46,16 +46,18 @@ export class FunctionsStore
             // Требуется функция типа expectedType
             if (expectedType instanceof FunctionType) {
 
-                parametersValuesTypes = expectedType.signature;
+                let signature = expectedType.signature;
                 expectedType = expectedType.returnType;
+
+                parametersValuesTypes = [];
+                for (let i = 0; i < signature.length; i++) {
+                    for (let j = 0; j < signature[i].identifiers.length; j++) {
+                        parametersValuesTypes[i + j] = signature[i].type;
+                    }
+                }
             }
-//            if
         }
 
-//        console.log(name);
-//        console.log(parametersValuesTypes);
-//        console.log(expectedType);
-//        console.log(this.items);
         let lowerCaseName = name.toLowerCase();
 
         let found = null;
@@ -64,8 +66,6 @@ export class FunctionsStore
             found = this.items[lowerCaseName];
         else
             return ( this.parentFunctionsStore ? this.parentFunctionsStore.getFunction(name, scope, parametersValuesTypes) : null);
-
-//        console.log(found);
 
         /**
          *  Если parametersValuesTypes === null, то сигнатура не будет проверяться.
@@ -89,8 +89,6 @@ export class FunctionsStore
 
                 if (parametersNumber !== inputTypesNumber)
                     return false;
-//                else if (signature.length === 0)
-//                    return true;
 
                 let typesArray = [];
                 for (let i = 0; i < signature.length; i++) {
@@ -103,13 +101,13 @@ export class FunctionsStore
                 // и требуется такая фильтрация
                 if (returnType !== null &&
                     expectedType !== null &&
-                    !this.checkType(returnType, expectedType, scope)) {
+                    !scope.checkType(returnType, expectedType)) {
                     return false;
                 }
 
                 for (let i = 0; i < typesArray.length; i++) {
 
-                    if (!this.checkType(typesArray[i], parametersValuesTypes[i], scope)) {
+                    if (!scope.checkType(typesArray[i], parametersValuesTypes[i])) {
                         return false;
                     }
                 }
@@ -120,21 +118,5 @@ export class FunctionsStore
         } else {
             return found;
         }
-    }
-
-    checkType(outerType, innerType, scope)
-    {
-        if ( outerType instanceof GeneralizedTypeBase &&
-            !scope.typeIncluded(outerType, innerType)) {
-            return false;
-        } else if(outerType instanceof TypeBase &&
-            !scope.sameType(outerType, innerType)) {
-            return false;
-        } else if (outerType instanceof TypeAsData &&
-            !scope.typeIncluded(outerType.type, innerType)) {
-            return false;
-        }
-
-        return true;
     }
 };

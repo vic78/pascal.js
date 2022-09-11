@@ -670,4 +670,20 @@ export class Scope
             return this.sameType(generalizedType, type);
         }
     }
+
+    checkType(outerType, innerType)
+    {
+        if ( outerType instanceof GeneralizedTypeBase &&
+            !this.typeIncluded(outerType, innerType)) {
+            return false;
+        } else if(outerType instanceof TypeBase &&
+            !this.sameType(outerType, innerType)) {
+            return false;
+        } else if (outerType instanceof TypeAsData &&
+            !this.typeIncluded(outerType.type, innerType)) {
+            return false;
+        }
+
+        return true;
+    }
 }

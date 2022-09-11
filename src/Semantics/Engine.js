@@ -13,6 +13,7 @@ import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/Ge
 import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js';
 import { ArrayType } from '../SyntaxAnalyzer/Tree/Types/ArrayType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
+import { ProcedureType } from '../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
 import { Identifier } from '../SyntaxAnalyzer/Tree/Identifier.js';
 import { Function } from '../SyntaxAnalyzer/Tree/Function.js';
 import { Procedure } from '../SyntaxAnalyzer/Tree/Procedure.js';
@@ -175,6 +176,73 @@ export class Engine
         return indexRing;
     }
 
+    /**
+     * Вызвать функцию или процедуру без скобок и параметров.
+     */
+    async evaluateIdentifierBranchRunner(identifierBranchExpression, parametersTypes = null, expectedType = null)
+    {
+        let expressionResult = await this.evaluateIdentifierBranch(identifierBranchExpression, parametersTypes, expectedType);
+
+        if (expressionResult instanceof CallableVariable) {
+            let currentScope = this.getCurrentScope();
+            let func = expressionResult.value;
+            let funcType = func.type;
+            let funcReturnType = funcType.returnType;
+
+            if ((!currentScope.checkType(expectedType, funcType) &&
+                currentScope.checkType(expectedType, funcReturnType) ||
+                expectedType === null &&
+                funcType instanceof ProcedureType
+                )&&
+                Array.isArray(funcType.signature) &&
+                funcType.signature.length === 0) {
+
+                let scope = new Scope(currentScope);
+                let procedureName = null;
+
+                if (func instanceof Function) {
+                    let procedureIdentifier = func.name;
+                    procedureName = procedureIdentifier.symbol.value.toLowerCase();
+                    scope.addVariable(procedureIdentifier, func.type.returnType, null, null, true);
+                    scope.callableName = func.name.symbol.value;
+                } else if (func instanceof FunctionItem) {
+                    let name = func.name;
+                    procedureName = name;
+                }
+
+                this.treesCounter++;
+
+                this.tree = func;
+                this.trees[this.treesCounter] = this.tree;
+                this.currentScopeId++;
+                this.scopes[this.currentScopeId] = scope;
+
+                await this.run();
+
+                if (typeof func.innerRun === 'function' ) {
+                    await func.innerRun(scope, this);
+                }
+
+                let result = null;
+                if (func instanceof FunctionItem ||
+                        func instanceof Function) {
+                    result = scope.getVariable(procedureName);
+                }
+
+                delete this.scopes[this.currentScopeId];
+
+                this.currentScopeId--;
+                this.treesCounter--;
+                this.tree = this.trees[this.treesCounter];
+
+                return result;
+            }
+
+        }
+
+        return expressionResult;
+    }
+
     async evaluateIdentifierBranch(identifierBranchExpression, parametersTypes = null, expectedType = null)
     {
         if (identifierBranchExpression instanceof Identifier) {
@@ -335,67 +403,6 @@ export class Engine
                 default:
                 case SymbolsCodes.assign:
             }
-
-            if (expressionResult instanceof CallableVariable) {
-                let func = expressionResult.value;
-                let funcType = func.type;
-                let funcReturnType = funcType.returnType;
-
-                if (!this.functionStore,checkType(expectedType, funcType, currentScope) &&
-                    this.functionStore,checkType(expectedType, funcReturnType, currentScope)) {
-
-                }
-
-                expressionResult.type.returnType) {
-
-                console.log(expressionResult);
-            }
-//            let calledElem = returnedElem instanceof CallableVariable ?
-//                        returnedElem.value :
-//                        returnedElem;
-//
-//            let currentScope = this.getCurrentScope();
-//            let scope = new Scope(currentScope);
-//            let procedureName = null;
-//
-//            if (calledElem instanceof Function) {
-//                let procedureIdentifier = calledElem.name;
-//                procedureName = procedureIdentifier.symbol.value.toLowerCase();
-//                scope.addVariable(procedureIdentifier, calledElem.type.returnType, null, null, true);
-//                scope.callableName = calledElem.name.symbol.value;
-//            } else if (calledElem instanceof FunctionItem) {
-//                let name = calledElem.name;
-//                procedureName = name;
-//            }
-//
-//            await this.addParametersToScope(identifierBranchExpression.parameters, evaluatedParameters, calledElem.type.signature, scope);
-//            this.treesCounter++;
-//
-//            this.tree = calledElem;
-//            this.trees[this.treesCounter] = this.tree;
-//            this.currentScopeId++;
-//            this.scopes[this.currentScopeId] = scope;
-//
-//            await this.run();
-//
-//            if (typeof calledElem.innerRun === 'function' ) {
-//                await calledElem.innerRun(scope, this);
-//            }
-//
-//            let result = null;
-//            if (calledElem instanceof FunctionItem ||
-//                    calledElem instanceof Function) {
-//                result = scope.getVariable(procedureName);
-//            }
-//
-//            delete this.scopes[this.currentScopeId];
-//
-//            this.currentScopeId--;
-//            this.treesCounter--;
-//            this.tree = this.trees[this.treesCounter];
-//            return result;
-
-
 
             if (destination instanceof TakeField) {
                 let recordVariable = await this.evaluateIdentifierBranch(destination.baseExpression);
@@ -573,6 +580,8 @@ export class Engine
             if (!caseFound && sentence.elseSentence !== null) {
                 this.evaluateSentence(sentence.elseSentence);
             }
+        } else if (sentence instanceof Identifier) {
+            await this.evaluateIdentifierBranchRunner(sentence);
         }
     }
 
@@ -818,10 +827,7 @@ export class Engine
                 expression instanceof GetByPointer ||
                 expression instanceof TakeField) {
 
-
-//            console.log('expectedType');
-//            console.log(expectedType);
-            return await this.evaluateIdentifierBranch(expression, null, expectedType);
+            return await this.evaluateIdentifierBranchRunner(expression, null, expectedType);
         } else {
             return await this.evaluateExpression(expression);
         }
