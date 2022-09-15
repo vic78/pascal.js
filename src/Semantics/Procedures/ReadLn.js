@@ -25,11 +25,15 @@ export class ReadLn extends ProcedureItem
         let parametersTypes = [];
         let parametersTypesIds = [];
 
-        await parametersList.forEach(async function(parameter) {
-            let evaluatedParameter = await engine.evaluateIdentifierBranch(parameter);
-            parametersTypesIds.push(evaluatedParameter.typeId);
-            parametersTypes.push(evaluatedParameter.type);
-        });
+        await Promise.all(
+            parametersList.map(
+                async (parameter) => {
+                    let evaluatedParameter = await engine.evaluateIdentifierBranch(parameter);
+                    parametersTypesIds.push(evaluatedParameter.typeId);
+                    parametersTypes.push(evaluatedParameter.type);
+                }
+            )
+        );
 
         let words = await this.getWords(parametersTypesIds, this.ouputNewLineSymbol);
         let self = this;
