@@ -3,8 +3,8 @@ import { TypesIds } from '../../../../Semantics/Variables/TypesIds.js';
 
 export class StringType extends ScalarType
 {
-    constructor(symbol = null)
+    constructor(symbol = null, typeId = TypesIds.STRING)
     {
-        super(symbol, TypesIds.STRING);
+        super(symbol, typeId);
     }
 }

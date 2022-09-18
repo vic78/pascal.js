@@ -1,7 +1,7 @@
-import { ScalarType } from '../ScalarType.js';
+import { StringType } from './StringType.js';
 import { TypesIds } from '../../../../Semantics/Variables/TypesIds.js';
 
-export class CharType extends ScalarType
+export class CharType extends StringType
 {
     constructor(symbol = null)
     {

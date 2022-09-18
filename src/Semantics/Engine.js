@@ -12,6 +12,9 @@ import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/GeneralizedTypeBase.js';
 import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js';
 import { ArrayType } from '../SyntaxAnalyzer/Tree/Types/ArrayType.js';
+import { StringType } from '../SyntaxAnalyzer/Tree/Types/Scalar/StringType.js';
+import { IntegerType } from '../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js';
+import { CharType } from '../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
 import { ProcedureType } from '../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
 import { Identifier } from '../SyntaxAnalyzer/Tree/Identifier.js';
@@ -270,13 +273,40 @@ export class Engine
         } else if (identifierBranchExpression instanceof IndexedIdentifier) {
             let currentScope = this.getCurrentScope();
 
-            let arrayVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier, parametersTypes);
-            if (!(arrayVariable instanceof ArrayVariable)) {
-                this.addError(ErrorsCodes.arrayExpected, 'Array expected', identifierBranchExpression);
-            }
+            let indexedVariable = await this.evaluateIdentifierBranch(identifierBranchExpression.identifier, parametersTypes);
+            let variableType = indexedVariable.type;
 
-            identifierBranchExpression.indexRing = await this.evaluateIndexRing(identifierBranchExpression.indexRing);
-            return arrayVariable.getByIndexRing(identifierBranchExpression.indexRing);
+            await this.evaluateIndexRing(identifierBranchExpression.indexRing);
+
+            let ring = identifierBranchExpression.indexRing;
+
+            if (variableType instanceof ArrayType) {
+                return indexedVariable.getByIndexRing(ring);
+            } else if (variableType instanceof StringType) {
+
+                if (ring.indexRing !== null) {
+                    this.addError(ErrorsCodes.typesMismatch, ` Illegal qualifier. Cannot apply more than one indices to String.`, identifierBranchExpression);
+                }
+
+                let indexType = ring.evaluatedIndexExpression.type;
+                if (!(indexType instanceof IntegerType) && indexType.typeId !== TypesIds.INTEGER) {
+                    this.addError(ErrorsCodes.typesMismatch, `Integer index expected but ${indexType} found.`, ring.indexExpression);
+                }
+
+                let indexValue = ring.evaluatedIndexExpression.value;
+                let indexedString = indexedVariable.value;
+                let stringLength  = typeof indexedString === 'string' ? indexedString.length : 0;
+
+                let resultCharacter =
+                    indexValue !== 0 &&
+                    indexValue >= 1 &&
+                    indexValue <= stringLength ? indexedString[indexValue - 1] : String.fromCharCode(0);
+
+                return currentScope.createVariable(new CharType, resultCharacter);
+
+            } else {
+                this.addError(ErrorsCodes.typesMismatch, `Array or String expected but ${indexedVariable.type} found.`, identifierBranchExpression);
+            }
 
         } else if (identifierBranchExpression instanceof FunctionCall) {
 
@@ -749,7 +779,9 @@ export class Engine
 
             let leftOperand = await this.evaluateSimpleExpression(expression.left);
             let rightOperand = await this.evaluateSimpleExpression(expression.right);
-            let typeId = leftOperand.typeId === TypesIds.REAL ||
+            let typeId = leftOperand.type instanceof StringType && rightOperand.type instanceof StringType ?
+                    TypesIds.STRING :
+                    leftOperand.typeId === TypesIds.REAL ||
                     rightOperand.typeId === TypesIds.REAL ? TypesIds.REAL : TypesIds.INTEGER;
 
             let result = null;

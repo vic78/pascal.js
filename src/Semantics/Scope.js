@@ -13,6 +13,7 @@ import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 import { BooleanType } from '../SyntaxAnalyzer/Tree/Types/Scalar/BooleanType.js';
 import { CharType } from '../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js';
 import { IntegerType } from '../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js';
+import { NumericType } from '../SyntaxAnalyzer/Tree/Types/NumericType.js';
 import { TypeBase } from '../SyntaxAnalyzer/Tree/Types/TypeBase.js';
 import { AppliedNamedType } from '../SyntaxAnalyzer/Tree/Types/AppliedNamedType.js';
 import { EnumType } from '../SyntaxAnalyzer/Tree/Types/EnumType.js';
@@ -673,9 +674,11 @@ export class Scope
 
     checkType(outerType, innerType)
     {
-        if ( outerType instanceof GeneralizedTypeBase &&
+        if (outerType instanceof GeneralizedTypeBase &&
             !this.typeIncluded(outerType, innerType)) {
             return false;
+        } else if (outerType instanceof NumericType) {
+            return innerType instanceof NumericType;
         } else if(outerType instanceof TypeBase &&
             !this.sameType(outerType, innerType)) {
             return false;
