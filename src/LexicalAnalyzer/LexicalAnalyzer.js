@@ -84,14 +84,14 @@ export class LexicalAnalyzer
                 let previousChar = null;
                 while (/[\d.]/.exec(this.char) !== null) {
                     if (this.char === '.') {
-                        if (!pointPresence) {
-                            pointPresence = true;
-                        } else {
+                        if (pointPresence) {
                             if (previousChar === '.') {
                                 this.wordBuffer = '.';
                                 return new NmbInt(this.token, SymbolsCodes.intC, this.currentWord);
                             }
                             break;
+                        } else {
+                            pointPresence = true;
                         }
                     }
                     previousChar = this.char;
@@ -99,7 +99,44 @@ export class LexicalAnalyzer
                     this.char = this.fileIO.nextCh();
                 }
 
-                return pointPresence ?
+                // exponential form
+                let stepsCounter = 0;
+                let isExp = false;
+                let expPart = '';
+                if (/e/i.exec(this.char)) {
+                    isExp = true;
+                    stepsCounter++;
+                    expPart += this.char;
+                    this.char = this.fileIO.nextCh();
+                    if (/[\d+-]/.exec(this.char)) {
+                        if (/[+-]/.exec(this.char)) {
+                            stepsCounter++;
+                            expPart += this.char;
+                            this.char = this.fileIO.nextCh();
+                        }
+                        if (/\d/.exec(this.char)) {
+                            while (/\d/.exec(this.char)) {
+                                stepsCounter++;
+                                expPart += this.char;
+                                this.char = this.fileIO.nextCh();
+                            }
+                        } else {
+                            isExp = false;
+                        }
+                    } else {
+                        isExp = false;
+                    }
+                }
+
+                if (isExp) {
+                    this.currentWord += expPart;
+                } else {
+                    for (let i = 1; i <= stepsCounter; i++) {
+                        this.char = this.fileIO.prevCh();
+                    }
+                }
+
+                return pointPresence || isExp ?
                     new NmbFloat(this.token, SymbolsCodes.floatC, this.currentWord) :
                     new NmbInt(this.token, SymbolsCodes.intC, this.currentWord);
             }
@@ -289,9 +326,7 @@ export class LexicalAnalyzer
 
     skipWhiteSpaces()
     {
-        var ws = /\s/;
-
-        while (ws.exec(this.char) !== null) {
+        while (/\s/.exec(this.char) !== null) {
             this.char = this.fileIO.nextCh();
         }
     }

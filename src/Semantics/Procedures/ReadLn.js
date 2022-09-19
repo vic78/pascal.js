@@ -108,7 +108,7 @@ export class ReadLn extends ProcedureItem
                 break;
             case TypesIds.STRING:
             default:
-                if (this.char === null) {
+                if (this.char === null || this.char === '' || this.char === '\n') {
                     await this.nextChar();
                 }
                 while (this.char !== this.ouputNewLineSymbol) {

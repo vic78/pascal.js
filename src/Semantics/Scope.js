@@ -11,6 +11,7 @@ import { ErrorsDescription } from '../Errors/ErrorsDescription.js';
 import { ErrorsCodes } from '../Errors/ErrorsCodes.js';
 import { ScalarType } from '../SyntaxAnalyzer/Tree/Types/ScalarType.js';
 import { BooleanType } from '../SyntaxAnalyzer/Tree/Types/Scalar/BooleanType.js';
+import { StringType } from '../SyntaxAnalyzer/Tree/Types/Scalar/StringType.js';
 import { CharType } from '../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js';
 import { IntegerType } from '../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js';
 import { NumericType } from '../SyntaxAnalyzer/Tree/Types/NumericType.js';
@@ -285,7 +286,7 @@ export class Scope
                 destination instanceof Identifier ||
                 item instanceof RecordVariable ) {
 
-                if (this.sameType(item.getType(), type)) {
+                if (this.typeIncluded(item.getType(), type)) {
                 } else {
                     this.addTypeMismatchError(type, item, treeNode);
                 }
@@ -667,6 +668,9 @@ export class Scope
             ;
         } else if (generalizedType instanceof UnindexedArrayType) {
             return type instanceof ArrayType;
+        } else if (generalizedType instanceof StringType &&
+                type instanceof CharType) {
+            return true;
         } else {
             return this.sameType(generalizedType, type);
         }

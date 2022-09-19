@@ -880,6 +880,9 @@ export class SyntaxAnalyzer
             let embeddedExpression = this.scanExpression();
             this.accept(SymbolsCodes.rightPar);
             return embeddedExpression;
+        } else {
+            let errorText = `Multiplier expression expected but '${this.symbol.stringValue}' found.`;
+            this.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol);
         }
     }
 

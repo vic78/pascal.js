@@ -53,12 +53,39 @@ export class BaseIO
         }
     }
 
+    prevCh()
+    {
+        if (this.linePointer === 0 && this.positionNow.charNumber === 0) {
+            return null;
+        } else {
+            if (this.positionNow.charNumber === 0) {
+
+                this.readPrevLine();
+                this.currentLineErrors = [];
+                this.positionNow.lineNumber--;
+                this.positionNow.charNumber = this.currentLine.length;
+            }
+
+            this.positionNow.charNumber--;
+            return this.currentLine[this.positionNow.charNumber - 1];
+        }
+    }
+
     readNextLine()
     {
        var currentLine = this.lines[this.linePointer++];
        this.currentLine = currentLine.split('');
        this.currentLine.push('\n');
        this.endOfFile = this.linePointer === this.lines.length;
+    }
+
+    readPrevLine()
+    {
+       if (this.linePointer > 0) {
+           var currentLine = this.lines[--this.linePointer];
+           this.currentLine = currentLine.split('');
+           this.currentLine.push('\n');
+       }
     }
 
     addError(errorCode, errorText = null, textPosition = null)
