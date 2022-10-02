@@ -196,6 +196,7 @@ export class Engine
                 Array.isArray(funcType.signature) &&
                 funcType.signature.length === 0 &&
                     expectedType === null ||
+                    funcType.signature instanceof UnboundedParametersList ||
                     !currentScope.checkType(expectedType, funcType) &&
                     (
                         funcType instanceof ProcedureType ||
@@ -319,7 +320,6 @@ export class Engine
             if (Array.isArray(evaluatedParameters)) {
                 evaluatedParametersTypes = evaluatedParameters.map((elem) => elem.type);
             }
-
             let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParametersTypes);
             let calledElem = returnedElem instanceof CallableVariable ?
                         returnedElem.value :

@@ -216,8 +216,9 @@ export class Scope
                 let destinationType = null;
                 if (destination instanceof Identifier) {
                     destinationType = item.type;
-                    if (this.sameType(type, destinationType)) {;
-                        this.setVariableObject(destination, value.clone());
+                    if (this.sameType(type, destinationType)) {
+                        let objectCopy = value.clone();
+                        item.items = objectCopy.items;
                     } else {
                         this.addTypeMismatchError(type, item, treeNode);
                     }
@@ -233,6 +234,9 @@ export class Scope
                         this.addTypeMismatchError(type, item, treeNode);
                     }
                 }
+            } else if (item instanceof RecordVariable) {
+                let objectCopy = value.clone();
+                item.items = objectCopy.items;
             } else if (item instanceof PointerVariable &&
                     type instanceof PointerType) {
 
@@ -299,7 +303,8 @@ export class Scope
                 this.items[lowerCaseName].value = variable.value;
             } else if (item instanceof ArrayVariable) {
                 if (destination instanceof Identifier) {
-                    this.setVariableObject(destination, variable.clone());
+                    let objectCopy = variable.clone();
+                    item.items = objectCopy.items;
                 } else if (destination instanceof IndexedIdentifier) {
                     let indexRing = destination.indexRing;
                     let destinationType = this.getDestinationType(item.type, indexRing);
@@ -317,7 +322,8 @@ export class Scope
                     }
                 }
             } else if (item instanceof RecordVariable) {
-                this.setVariableObject(destination, variable.clone());
+                let objectCopy = variable.clone();
+                item.items = objectCopy.items;
             } else if (item instanceof PointerVariable &&
                 type instanceof PointerType) {
                 if (this.sameType(item.type, type)) {

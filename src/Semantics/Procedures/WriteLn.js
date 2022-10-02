@@ -18,12 +18,13 @@ export class WriteLn extends ProcedureItem
     {
         let parametersList = scope.getParametersList();
 
-        this.outputStream.write(parametersList.map(function(elem){
+        this.outputStream.write((parametersList === null ? '' :
+        parametersList.map(function(elem){
             if (elem instanceof EnumVariable) {
                 return elem.value.symbol.stringValue;
             } else if (elem instanceof ScalarVariable) {
                 return elem.value;
             }
-        }).join('') + this.ouputNewLineSymbol);
+        }).join('')) + this.ouputNewLineSymbol);
     }
 };
