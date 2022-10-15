@@ -1,6 +1,6 @@
 import { BaseOutput } from './BaseOutput.js';
 
-export class StringOutput  extends BaseOutput
+export class StringOutput extends BaseOutput
 {
     constructor()
     {
@@ -17,5 +17,10 @@ export class StringOutput  extends BaseOutput
     listError(error)
     {
         this.outputLines.push(this.getErrorText(error, ++this.errorsCounter));
+    }
+
+    clearLines()
+    {
+        this.outputLines = [];
     }
 }
