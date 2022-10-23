@@ -970,7 +970,7 @@ export class SyntaxAnalyzer
                     constant.symbol.value = -value;
                     break;
                 default:
-                    this.addError(ErrorsCodes.typesMismatch, 'Using unary minus with non-numeric values', unaryMinus);
+                    this.addError(ErrorsCodes.typesMismatch, 'Using unary minus with non-numeric values', signSymbol);
 
             }
         }
