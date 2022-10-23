@@ -4,6 +4,8 @@ import { ArrayVariable } from './ArrayVariable.js';
 import { ArrayType } from '../../SyntaxAnalyzer/Tree/Types/ArrayType.js';
 import { IndexRing } from '../../SyntaxAnalyzer/Tree/Arrays/IndexRing.js';
 import { ErrorsCodes } from '../../Errors/ErrorsCodes.js';
+import { ArrayTuple } from '../../Semantics/Constants/ArrayTuple.js';
+import { RecordTuple } from '../../Semantics/Constants/RecordTuple.js';
 
 export class RecordVariable extends BaseVariable
 {
@@ -43,6 +45,27 @@ export class RecordVariable extends BaseVariable
         }
     }
 
+    setPropertyByName(propertyName, type, initialValue)
+    {
+        let value = initialValue instanceof ArrayTuple ||
+                initialValue instanceof RecordTuple ? initialValue : initialValue.symbol.value;
+
+        this.items[propertyName] =  this.scope.createVariable(type, value);
+    }
+
+    setRecordTuple(recordTuple)
+    {
+        let typesObject = this.type.typesList;
+        let recordTupleItems = recordTuple.items;
+
+        for (let [key, value] of Object.entries(typesObject)) {
+
+            if(recordTupleItems.hasOwnProperty(key.toLowerCase())) {
+                this.setPropertyByName(key.toLowerCase(), value, recordTupleItems[key]);
+            }
+        }
+    }
+
     clone()
     {
         let copyRecordVariable = new RecordVariable(this.type, this.scope);
@@ -56,6 +79,4 @@ export class RecordVariable extends BaseVariable
 
         return copyRecordVariable;
     }
-
-
 }

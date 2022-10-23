@@ -3,6 +3,9 @@ import { BaseVariable } from './BaseVariable.js';
 import { ArrayType } from '../../SyntaxAnalyzer/Tree/Types/ArrayType.js';
 import { IndexRing } from '../../SyntaxAnalyzer/Tree/Arrays/IndexRing.js';
 import { ErrorsCodes } from '../../Errors/ErrorsCodes.js';
+import { ArrayTuple } from '../../Semantics/Constants/ArrayTuple.js';
+import { RecordTuple } from '../../Semantics/Constants/RecordTuple.js';
+import { SymbolBase } from '../../LexicalAnalyzer/Symbols/SymbolBase.js';
 
 export class ArrayVariable extends BaseVariable
 {
@@ -38,6 +41,27 @@ export class ArrayVariable extends BaseVariable
         }
     }
 
+    setInitialValueByInnerIndex(index, type, initialValue)
+    {
+        if (index < 0 || index >= this.arrayLength) {
+            this.scope.addError(ErrorsCodes.indexIsOutOfRange, '', index);
+        } else if (typeof this.items[index] === 'undefined') {
+            let value = initialValue instanceof ArrayTuple ||
+                initialValue instanceof RecordTuple ? initialValue : initialValue.symbol.value;
+
+            let typeOfElements = this.type.typeOfElements;
+            this.items[index] = this.scope.createVariable(typeOfElements, value);
+        }
+    }
+
+    setArrayTuple(arrayTuple)
+    {
+        let self = this;
+        arrayTuple.items.forEach((elem, index) => {
+            self.setInitialValueByInnerIndex(index, self.type.typeOfElements, elem);
+        });
+    }
+
     getByIndexRing(indexRing)
     {
         let indexExpression = indexRing.evaluatedIndexExpression;
@@ -62,7 +86,7 @@ export class ArrayVariable extends BaseVariable
         copyArrayVariable.rightIntegerIndex = this.rightIntegerIndex;
         copyArrayVariable.offset = this.offset;
         copyArrayVariable.arrayLength = this.arrayLength;
-        copyArrayVariable.parentArray = this.parentArray;
+//        copyArrayVariable.parentArray = this.parentArray;
 
         this.items.forEach(
             (item, index) => { copyArrayVariable.items[index] = item.clone(); }

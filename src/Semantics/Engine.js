@@ -23,6 +23,8 @@ import { Procedure } from '../SyntaxAnalyzer/Tree/Procedure.js';
 import { Assignation } from '../SyntaxAnalyzer/Tree/Assignation.js';
 import { SymbolsCodes } from '../LexicalAnalyzer/SymbolsCodes.js';
 import { Constant } from '../SyntaxAnalyzer/Tree/Constant.js';
+import { ArrayTuple } from '../Semantics/Constants/ArrayTuple.js';
+import { RecordTuple } from '../Semantics/Constants/RecordTuple.js';
 import { NmbFloat } from '../LexicalAnalyzer/Symbols/NmbFloat.js';
 import { NmbInt } from '../LexicalAnalyzer/Symbols/NmbInt.js';
 import { OneSymbol } from '../LexicalAnalyzer/Symbols/OneSymbol.js';
@@ -122,6 +124,9 @@ export class Engine
                                 let initialValue = variablesDeclaration.initialValue;
                                 if (initialValue instanceof Constant) {
                                     currentScope.setValue(identifier, initialValue.type, initialValue.symbol.value, initialValue);
+                                } else if (initialValue instanceof ArrayTuple ||
+                                    initialValue instanceof RecordTuple) {
+                                    currentScope.setValue(identifier, initialValue.type, initialValue, initialValue);
                                 }
                             } else {
                                 throw 'Identifier must be here!';

@@ -44,6 +44,8 @@ import { FunctionType } from './Tree/Types/FunctionType.js';
 import { ProcedureType } from './Tree/Types/ProcedureType.js';
 import { TypeApplied } from './Tree/ParametersList/TypeApplied.js';
 import { TypesIds } from '../Semantics/Variables/TypesIds.js';
+import { ArrayTuple } from '../Semantics/Constants/ArrayTuple.js';
+import { RecordTuple } from '../Semantics/Constants/RecordTuple.js';
 import { EnumType } from './Tree/Types/EnumType.js';
 import { ArrayType } from './Tree/Types/ArrayType.js';
 import { PointerType } from './Tree/Types/PointerType.js';
@@ -953,6 +955,9 @@ export class SyntaxAnalyzer
             case SymbolsCodes.ident:
                 constant = new Constant(this.symbol);
                 this.nextSym();
+                break;
+            case SymbolsCodes.leftPar:
+                constant = this.scanTuple();
         }
 
         if (unaryMinus) {
@@ -960,6 +965,62 @@ export class SyntaxAnalyzer
         }
 
         return constant;
+    }
+
+    scanTuple()
+    {
+        let leftPar = this.symbol;
+        this.accept(SymbolsCodes.leftPar);
+        let identifier = null;
+        let firstItem = null;
+        let isRecordTuple = false;
+        if (this.symbol.symbolCode === SymbolsCodes.ident) {
+            identifier = this.symbol;
+            this.nextSym();
+            if (this.symbol.symbolCode === SymbolsCodes.comma ||
+                this.symbol.symbolCode === SymbolsCodes.rightPar) {
+                let isRecordTuple = false;
+                firstItem = identifier;
+            } else if (this.symbol.symbolCode === SymbolsCodes.colon) {
+                this.nextSym();
+                isRecordTuple = true;
+                firstItem = this.scanConstant();
+            } else {
+                this.anotherSymbolExpected(SymbolsCodes.colon);
+            }
+        } else {
+            firstItem = this.scanConstant();
+        }
+
+        if (isRecordTuple) {
+            let recordTupleItems = {};
+            if (identifier !== null) {
+                recordTupleItems[identifier.value.toLowerCase()] = firstItem;
+            }
+            while (this.symbol.symbolCode !== SymbolsCodes.rightPar) {
+                this.accept(SymbolsCodes.semicolon);
+                identifier = this.symbol;
+                this.accept(SymbolsCodes.ident);
+                this.accept(SymbolsCodes.colon);
+                firstItem = this.scanConstant();
+
+                recordTupleItems[identifier.value.toLowerCase()] = firstItem;
+            }
+            this.nextSym();
+            return new RecordTuple(leftPar, recordTupleItems);
+        } else {
+            let arrayTupleItems = [];
+            arrayTupleItems.push(firstItem);
+
+            while (this.symbol.symbolCode !== SymbolsCodes.rightPar) {
+                this.accept(SymbolsCodes.comma);
+                firstItem = this.scanConstant();
+                arrayTupleItems.push(firstItem);
+            }
+
+            this.nextSym();
+            return new ArrayTuple(leftPar, arrayTupleItems);
+        }
     }
 
     addError(errorCode, errorText = null, symbol)

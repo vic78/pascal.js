@@ -35,6 +35,8 @@ import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.
 import { IndexedArrayType } from '../SyntaxAnalyzer/Tree/Types/Generalized/IndexedArrayType.js'
 import { RangeableType } from '../SyntaxAnalyzer/Tree/Types/Generalized/RangeableType.js'
 import { UnindexedArrayType } from '../SyntaxAnalyzer/Tree/Types/Generalized/UnindexedArrayType.js'
+import { ArrayTuple } from '../Semantics/Constants/ArrayTuple.js';
+import { RecordTuple } from '../Semantics/Constants/RecordTuple.js';
 
 
 export class Scope
@@ -95,14 +97,19 @@ export class Scope
             }
             return new EnumVariable(value, resolvedType);
         } else if (resolvedType instanceof ArrayType) {
-            return this.createArrayVariable(value, type);
+            return this.createArrayVariable(type, value);
         } else if (resolvedType instanceof PointerType) {
             let targetType = this.resolveNamedType(type.type);
             return new PointerVariable(value, targetType);
         } else if (resolvedType instanceof FunctionType ||
-            resolvedType instanceof ProcedureType ||
-            resolvedType instanceof RecordType) {
+            resolvedType instanceof ProcedureType) {
             return this.createDefaultVariable(resolvedType);
+        } else if (resolvedType instanceof RecordType) {
+            let record = this.createDefaultVariable(resolvedType);
+            if (value instanceof RecordTuple) {
+                record.setRecordTuple(value);
+            }
+            return record;
         } else if (resolvedType instanceof TypeAsData) {
             return new TypeVariable(resolvedType.type, value);
         }
@@ -146,12 +153,12 @@ export class Scope
         }
     }
 
-    createArrayVariable(parentArray, type)
+    createArrayVariable(type, value)
     {
         let resolvedType = this.resolveNamedType(type);
         let variable = new ArrayVariable(resolvedType, this);
 
-        variable.parentArray = parentArray;
+//        variable.parentArray = parentArray;
         let leftIndex = resolvedType.leftIndex;
         let rightIndex = resolvedType.rightIndex;
         let leftIntegerIndex = this.getIntegerValueOfIndexConstant(leftIndex);
@@ -166,6 +173,10 @@ export class Scope
         variable.leftIntegerIndex = 0;
         variable.rightIntegerIndex = maxIntegerIndex;
         variable.rightIntegerIndex = maxIntegerIndex;
+
+        if (value instanceof ArrayTuple) {
+            variable.setArrayTuple(value);
+        }
 
         return variable;
     }
@@ -215,12 +226,16 @@ export class Scope
 
                 let destinationType = null;
                 if (destination instanceof Identifier) {
-                    destinationType = item.type;
-                    if (this.sameType(type, destinationType)) {
-                        let objectCopy = value.clone();
-                        item.items = objectCopy.items;
+                    if (value instanceof ArrayTuple) {
+                        item.setArrayTuple(value);
                     } else {
-                        this.addTypeMismatchError(type, item, treeNode);
+                        destinationType = item.type;
+                        if (this.sameType(type, destinationType)) {
+                            let objectCopy = value.clone();
+                            item.items = objectCopy.items;
+                        } else {
+                            this.addTypeMismatchError(type, item, treeNode);
+                        }
                     }
                 } else if (destination instanceof IndexedIdentifier) {
                     let indexRing = destination.indexRing;
@@ -235,8 +250,12 @@ export class Scope
                     }
                 }
             } else if (item instanceof RecordVariable) {
-                let objectCopy = value.clone();
-                item.items = objectCopy.items;
+                if (value instanceof RecordTuple) {
+                    item.setRecordTuple(value);
+                } else {
+                    let objectCopy = value.clone();
+                    item.items = objectCopy.items;
+                }
             } else if (item instanceof PointerVariable &&
                     type instanceof PointerType) {
 
