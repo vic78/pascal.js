@@ -946,7 +946,9 @@ export class SyntaxAnalyzer
 
         let constant = null;
 
-        switch(this.symbol.symbolCode) {
+        let constantCode = this.symbol.symbolCode;
+
+        switch(constantCode) {
             case SymbolsCodes.floatC:
             case SymbolsCodes.intC:
             case SymbolsCodes.charC:
@@ -961,7 +963,16 @@ export class SyntaxAnalyzer
         }
 
         if (unaryMinus) {
-            constant = new UnaryMinus(signSymbol, constant);
+            switch (constantCode) {
+                case SymbolsCodes.floatC:
+                case SymbolsCodes.intC:
+                    let value = constant.symbol.value;
+                    constant.symbol.value = -value;
+                    break;
+                default:
+                    this.addError(ErrorsCodes.typesMismatch, 'Using unary minus with non-numeric values', unaryMinus);
+
+            }
         }
 
         return constant;
