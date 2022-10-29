@@ -450,11 +450,49 @@ export class Engine
                 currentScope.setRecordVariableProperty(recordVariable, propertyIdentifier, expressionResult);
 
             } else {
+                let indexedVariable = null;
+                let variableType = null;
                 if (destination instanceof IndexedIdentifier) {
-                    destination.indexRing = await this.evaluateIndexRing(destination.indexRing);
-                }
+                    await this.evaluateIndexRing(destination.indexRing);
 
-                currentScope.setVariableValue(destination, expressionResult, sentence.destination);
+                    indexedVariable = await this.evaluateIdentifierBranch(destination.identifier);
+                    variableType = indexedVariable.type;
+                }
+                // Установка одного символа строки по индексу
+                if (destination instanceof IndexedIdentifier &&
+                    variableType instanceof StringType) {
+                    let ring = destination.indexRing;
+
+                    if (ring.indexRing !== null) {
+                        this.addError(ErrorsCodes.typesMismatch, ` Illegal qualifier. Cannot apply more than one indices to String.`, identifierBranchExpression);
+                    }
+
+                    let indexType = ring.evaluatedIndexExpression.type;
+                    if (!(indexType instanceof IntegerType) && indexType.typeId !== TypesIds.INTEGER) {
+                        this.addError(ErrorsCodes.typesMismatch, `Integer index expected but ${indexType} found.`, ring.indexExpression);
+                    }
+
+                    let resultType = expressionResult.type;
+                    let resultValue = expressionResult.value;
+
+                    if (!(resultType instanceof StringType) &&
+                        !(resultType instanceof CharType) ||
+                        !(typeof resultValue === 'string') ||
+                        resultValue.length !== 1) {
+
+                        this.addError(ErrorsCodes.typesMismatch, `A Char expected but '${resultValue}' found.`, sourceExpression);
+                    }
+
+                    let indexValue = ring.evaluatedIndexExpression.value;
+                    let indexedString = indexedVariable.value;
+                    let stringLength  = typeof indexedString === 'string' ? indexedString.length : 0;
+
+                    if (indexValue > 0 && indexValue <= stringLength) {
+                        indexedVariable.value = indexedString.substring(0, indexValue-1) + resultValue + indexedString.substring(indexValue);
+                    }
+                } else {
+                    currentScope.setVariableValue(destination, expressionResult, sentence.destination);
+                }
             }
         } else if (sentence instanceof CompoundOperator) {
             if (sentence.sentences) {
