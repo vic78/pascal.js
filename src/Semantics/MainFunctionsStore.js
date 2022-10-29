@@ -15,7 +15,8 @@ import { Write } from './Procedures/Write.js';
 import { ReadLn } from './Procedures/ReadLn.js';
 import { Read } from './Procedures/Read.js';
 import { Randomize } from './Procedures/Randomize.js';
-import { Val } from './Procedures/Val.js';
+import { Val } from './Procedures/Val/Val.js';
+import { ValCode } from './Procedures/Val/ValCode.js';
 
 export class MainFunctionsStore extends FunctionsStore
 {
@@ -35,7 +36,7 @@ export class MainFunctionsStore extends FunctionsStore
         this.items.readln = new ReadLn(input, outputStream, ouputNewLineSymbol);
         this.items.read = new Read(input, outputStream, ouputNewLineSymbol);
         this.items.randomize = new Randomize;
-        this.items.val = new Val;
+        this.items.val = [ new Val, new ValCode ];
     }
 
     addFunction(name, procedure)

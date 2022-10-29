@@ -95,10 +95,12 @@ export class FunctionsStore
 
                 let typesArray = [];
                 let typesArrayRefs = [];
+                let typeCounter = 0;
                 for (let i = 0; i < signature.length; i++) {
                     for (let j = 0; j < signature[i].identifiers.length; j++) {
-                        typesArray[i + j] = signature[i].type;
-                        typesArrayRefs[i + j] = signature[i].byReference;
+                        typesArray[typeCounter] = signature[i].type;
+                        typesArrayRefs[typeCounter] = signature[i].byReference;
+                        typeCounter++;
                     }
                 }
 

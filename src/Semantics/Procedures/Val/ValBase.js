@@ -1,54 +1,22 @@
-import { ProcedureItem } from '../ProcedureItem.js';
-import { EnumVariable } from '../Variables/EnumVariable.js';
-import { ScalarVariable } from '../Variables/ScalarVariable.js';
-import { UnboundedParametersList } from '../Signatures/UnboundedParametersList.js';
-import { ProcedureType } from '../../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
-import { StringType } from '../../SyntaxAnalyzer/Tree/Types/Scalar/StringType.js';
-import { IntegerType } from '../../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js';
-import { NumericType } from '../../SyntaxAnalyzer/Tree/Types/NumericType.js';
-import { TypeApplied } from '../../SyntaxAnalyzer/Tree/ParametersList/TypeApplied.js';
-import { Identifier } from '../../SyntaxAnalyzer/Tree/Identifier.js'
-import { Symbol } from '../../LexicalAnalyzer/Symbols/Symbol.js'
-import { TypesIds } from '../../Semantics/Variables/TypesIds.js'
+import { ProcedureItem } from '../../ProcedureItem.js';
+import { TypesIds } from '../../../Semantics/Variables/TypesIds.js'
 
-export class Val extends ProcedureItem
+export class ValBase extends ProcedureItem
 {
     constructor()
     {
         super('val');
-        this.type = new ProcedureType(
-            null,
-            [   new TypeApplied(
-                    null,
-                    false,
-                    new StringType,
-                    [ new Identifier( new Symbol(null, null, 's') ) ]
-                ),
-                new TypeApplied(
-                    null,
-                    true,
-                    new NumericType,
-                    [ new Identifier( new Symbol(null, null, 'v') ) ]
-                ),
-                new TypeApplied(
-                    null,
-                    true,
-                    new IntegerType,
-                    [ new Identifier( new Symbol(null, null, 'code') ) ]
-                )
-            ]
-        );
 
         this.char = null;
         this.letters = [];
         this.charCounter = 0;
+        this.code = null;
     }
 
-    async innerRun(scope)
+    async baseRun(scope)
     {
         let stringVariable = scope.getVariable('s');
         let valueVariable = scope.getVariable('v');
-        let codeVariable = scope.getVariable('code');
 
         let v = 0;
         let code = 1;
@@ -159,7 +127,7 @@ export class Val extends ProcedureItem
         }
 
         valueVariable.value = v;
-        codeVariable.value = code;
+        this.code = code;
     }
 
     nextCh()
