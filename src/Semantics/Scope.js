@@ -319,11 +319,6 @@ export class Scope
                 item instanceof EnumVariable ||
                 item instanceof CallableVariable) {
 
-                if (item.getType() instanceof StringType &&
-                        destination instanceof IndexedIdentifier) {
-
-                }
-
                 this.items[lowerCaseName].value = variable.value;
             } else if (item instanceof ArrayVariable) {
                 if (destination instanceof Identifier) {
