@@ -319,6 +319,11 @@ export class Scope
                 item instanceof EnumVariable ||
                 item instanceof CallableVariable) {
 
+                if (item.getType() instanceof StringType &&
+                        destination instanceof IndexedIdentifier) {
+
+                }
+
                 this.items[lowerCaseName].value = variable.value;
             } else if (item instanceof ArrayVariable) {
                 if (destination instanceof Identifier) {
@@ -706,6 +711,8 @@ export class Scope
         if (outerType instanceof GeneralizedTypeBase &&
             !this.typeIncluded(outerType, innerType)) {
             return false;
+        } else if (outerType instanceof StringType) {
+            return innerType instanceof CharType || innerType instanceof StringType;
         } else if (outerType instanceof NumericType) {
             return innerType instanceof NumericType;
         } else if(outerType instanceof TypeBase &&
