@@ -17,6 +17,7 @@ import { Identifier } from './Tree/Identifier.js';
 import { FunctionCall } from './Tree/FunctionCall.js';
 import { ProcedureCall } from './Tree/ProcedureCall.js';
 import { ScalarType } from './Tree/Types/ScalarType.js';
+import { LongIntType } from './Tree/Types/Scalar/LongIntType.js';
 import { RecordType } from './Tree/Types/RecordType.js';
 import { AppliedNamedType } from './Tree/Types/AppliedNamedType.js';
 import { VariablesDeclaration } from './Tree/VariablesDeclaration.js';
@@ -265,6 +266,7 @@ export class SyntaxAnalyzer
             let targetType = this.scanType();
             return new PointerType(typeSymbol, targetType);
         } else if (this.symbol.symbolCode === SymbolsCodes.integerSy ||
+            this.symbol.symbolCode === SymbolsCodes.longintSy ||
             this.symbol.symbolCode === SymbolsCodes.booleanSy ||
             this.symbol.symbolCode === SymbolsCodes.realSy ||
             this.symbol.symbolCode === SymbolsCodes.stringSy ||
@@ -290,6 +292,8 @@ export class SyntaxAnalyzer
                 case SymbolsCodes.booleanSy:
                     typeId = TypesIds.BOOLEAN;
                     break;
+                case SymbolsCodes.longintSy:
+                    return new LongIntType(typeSymbol);
             }
 
             return new ScalarType(typeSymbol, typeId);

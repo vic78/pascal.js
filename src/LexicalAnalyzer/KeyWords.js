@@ -45,6 +45,7 @@ export class KeyWords
             ['repeat', SymbolsCodes.repeatSy],
             ['program', SymbolsCodes.programSy],
             ['integer', SymbolsCodes.integerSy],
+            ['longint', SymbolsCodes.longintSy],
             ['boolean', SymbolsCodes.booleanSy],
             ['function', SymbolsCodes.functionSy],
             ['procedure', SymbolsCodes.procedureSy],

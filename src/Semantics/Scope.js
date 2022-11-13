@@ -185,7 +185,7 @@ export class Scope
     {
         if (type instanceof AppliedNamedType) {
             let name = type.symbol.stringValue;
-            let refType = this.getType(name);
+            let refType = this.getType(name, type);
             return this.resolveNamedType(refType);
         } else {
             return  type;
