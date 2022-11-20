@@ -580,6 +580,12 @@ export class Scope
             if (resolvedType === null ||
                 resolvedType instanceof ScalarType) {
                 constant = new ScalarVariable(value.symbol.value, type ? resolvedType.typeId : value.typeId);
+            } else if (resolvedType instanceof ArrayType &&
+                value instanceof ArrayTuple) {
+                constant = this.createArrayVariable(resolvedType, value);
+            } else if(resolvedType instanceof RecordType &&
+                value instanceof RecordTuple) {
+                constant = this.createVariable(resolvedType, value);
             }
 
             this.constants[lowerCaseName] = constant;
