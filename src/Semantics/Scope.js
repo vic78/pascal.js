@@ -88,6 +88,9 @@ export class Scope
                     case TypesIds.STRING:
                         value = '';
                         break;
+                    case TypesIds.BOOLEAN:
+                        value = false;
+                        break;
                 }
             }
             return new ScalarVariable(value, resolvedType.typeId);
