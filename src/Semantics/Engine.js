@@ -539,7 +539,8 @@ export class Engine
         } else if (sentence instanceof ForCycle) {
             let currentScope = this.getCurrentScope();
             let variableIdentifier = sentence.variableIdentifier;
-            let currentValue = await this.evaluateExpression(sentence.initExpression);
+            let initalValueVariable = await this.evaluateExpression(sentence.initExpression);
+            let currentValue = currentScope.createVariable(initalValueVariable.type, initalValueVariable.value);
             let lastValue = await this.evaluateExpression(sentence.lastExpression);
 
             let increment = null;
