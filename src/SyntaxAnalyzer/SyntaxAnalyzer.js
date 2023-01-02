@@ -849,16 +849,19 @@ export class SyntaxAnalyzer
     /** Синтаксическая диаграмма "множитель" */
     scanMultiplier()
     {
+        let unaryOperationSymbol = null;
         switch (this.symbol.symbolCode) {
             case SymbolsCodes.minus:
+                unaryOperationSymbol = this.symbol;
                 this.nextSym();
-                return new UnaryMinus(this.symbol, this.scanMultiplier());
+                return new UnaryMinus(unaryOperationSymbol, this.scanMultiplier());
             case SymbolsCodes.plus:
                 this.nextSym();
                 return this.scanMultiplier();
             case SymbolsCodes.notSy:
+                unaryOperationSymbol = this.symbol;
                 this.nextSym();
-                return new Not(this.symbol, this.scanMultiplier());
+                return new Not(unaryOperationSymbol, this.scanMultiplier());
         }
 
         if (this.symbol.symbolCode === SymbolsCodes.ident) {
