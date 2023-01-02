@@ -782,31 +782,7 @@ export class SyntaxAnalyzer
     /** Синтаксическая диаграмма "простое выражение" */
     scanSimpleExpression()
     {
-        let unaryMinus = false;
-        let not = false;
-        let term = null;
-        let unaryOperationSymbol = null;
-
-        switch (this.symbol.symbolCode) {
-            case SymbolsCodes.minus:
-                unaryMinus = true;
-            case SymbolsCodes.plus:
-                unaryOperationSymbol = this.symbol;
-                this.nextSym();
-                break;
-            case SymbolsCodes.notSy:
-                not = true;
-                unaryOperationSymbol = this.symbol;
-                this.nextSym();
-        }
-
-        term = this.scanTerm();
-        if (unaryMinus) {
-            term = new UnaryMinus(unaryOperationSymbol, term);
-        }
-        if (not) {
-            term = new Not(unaryOperationSymbol, term);
-        }
+        let term = this.scanTerm();
 
         while ( this.symbol !== null && (
                     this.symbol.symbolCode === SymbolsCodes.plus ||
@@ -873,6 +849,18 @@ export class SyntaxAnalyzer
     /** Синтаксическая диаграмма "множитель" */
     scanMultiplier()
     {
+        switch (this.symbol.symbolCode) {
+            case SymbolsCodes.minus:
+                this.nextSym();
+                return new UnaryMinus(this.symbol, this.scanMultiplier());
+            case SymbolsCodes.plus:
+                this.nextSym();
+                return this.scanMultiplier();
+            case SymbolsCodes.notSy:
+                this.nextSym();
+                return new Not(this.symbol, this.scanMultiplier());
+        }
+
         if (this.symbol.symbolCode === SymbolsCodes.ident) {
             return this.scanIdentifierBranch();
         } else if ( this.symbol.symbolCode === SymbolsCodes.floatC ||
