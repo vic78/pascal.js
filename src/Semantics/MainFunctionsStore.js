@@ -1,7 +1,7 @@
 import { FunctionsStore } from './FunctionsStore.js';
 
-import { Ord } from './Functions/Ord.js';
-import { Chr } from './Functions/Chr.js';
+import { OrdChar } from './Functions/Ord/OrdChar.js';
+import { ChrInteger } from './Functions/Chr/ChrInteger.js';
 import { LowArray } from './Functions/Low/LowArray.js';
 import { LowType } from './Functions/Low/LowType.js';
 import { HighArray } from './Functions/High/HighArray.js';
@@ -23,8 +23,8 @@ export class MainFunctionsStore extends FunctionsStore
     constructor(input, outputStream, ouputNewLineSymbol)
     {
         super();
-        this.items.chr = new Chr;
-        this.items.ord = new Ord;
+        this.items.chr = [ new ChrInteger ];
+        this.items.ord = [ new OrdChar ];
         this.items.random = [ new RandomInteger, new RandomReal ];
         this.items.low = [ new LowArray, new LowType ];
         this.items.high = [ new HighArray, new HighType ];
