@@ -717,6 +717,8 @@ export class Scope
             return false;
         } else if (outerType instanceof StringType) {
             return innerType instanceof CharType || innerType instanceof StringType;
+        } else if (outerType instanceof IntegerType) {
+            return innerType instanceof IntegerType;
         } else if (outerType instanceof NumericType) {
             return innerType instanceof NumericType;
         } else if(outerType instanceof TypeBase &&
