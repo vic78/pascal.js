@@ -1,14 +1,12 @@
-import { TypeBase } from './TypeBase.js';
+import { SubprogramType } from './SubprogramType.js';
 import { TypesIds } from '../../../Semantics/Variables/TypesIds.js';
 import { CallableVariable } from '../../../Semantics/Variables/CallableVariable.js';
 
-export class FunctionType extends TypeBase
+export class FunctionType extends SubprogramType
 {
     constructor(symbol, signature = null, returnType = null)
     {
-        super(symbol, TypesIds.FUNCTION);
-        this.returnType = returnType;
-        this.signature = signature;
+        super(symbol, signature, TypesIds.FUNCTION, returnType);
     }
 
     toString()

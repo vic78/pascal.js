@@ -5,5 +5,4 @@ var
     Arr: newArr;
 begin
     c := high(newArr);
-    writeln(c);
 end.

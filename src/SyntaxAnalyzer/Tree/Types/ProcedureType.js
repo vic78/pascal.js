@@ -1,13 +1,11 @@
-import { TypeBase } from './TypeBase.js';
+import { SubprogramType } from './SubprogramType.js';
 import { TypesIds } from '../../../Semantics/Variables/TypesIds.js';
 
-export class ProcedureType extends TypeBase
+export class ProcedureType extends SubprogramType
 {
-    constructor(symbol, signature, identifiers)
+    constructor(symbol, signature)
     {
-        super(symbol, TypesIds.PROCEDURE);
-        this.identifiers = identifiers;
-        this.signature = signature;
+        super(symbol, signature, TypesIds.PROCEDURE);
     }
 
 

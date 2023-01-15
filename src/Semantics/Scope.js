@@ -20,6 +20,7 @@ import { AppliedNamedType } from '../SyntaxAnalyzer/Tree/Types/AppliedNamedType.
 import { EnumType } from '../SyntaxAnalyzer/Tree/Types/EnumType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
 import { ProcedureType } from '../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
+import { SubprogramType } from '../SyntaxAnalyzer/Tree/Types/SubprogramType.js';
 import { ArrayType } from '../SyntaxAnalyzer/Tree/Types/ArrayType.js';
 import { PointerType } from '../SyntaxAnalyzer/Tree/Types/PointerType.js';
 import { RecordType } from '../SyntaxAnalyzer/Tree/Types/RecordType.js';
@@ -715,6 +716,8 @@ export class Scope
         if (outerType instanceof GeneralizedTypeBase &&
             !this.typeIncluded(outerType, innerType)) {
             return false;
+        } else if (outerType instanceof SubprogramType) {
+            return innerType instanceof SubprogramType;
         } else if (outerType instanceof StringType) {
             return innerType instanceof CharType || innerType instanceof StringType;
         } else if (outerType instanceof IntegerType) {

@@ -28,9 +28,10 @@ export class ArrayVariable extends BaseVariable
         let indexExpression = indexRing.evaluatedIndexExpression;
         let index = this.scope.getIntegerValueOfIndexVariable(indexExpression) + this.offset;
 
-        if (index < 0 || index >= this.arrayLength) {
-            this.scope.addError(ErrorsCodes.indexIsOutOfRange, '', indexRing);
-        } else if (typeof this.items[index] === 'undefined') {
+//        if (index < 0 || index >= this.arrayLength) {
+//            this.scope.addError(ErrorsCodes.indexIsOutOfRange, '', indexRing);
+//        } else
+        if (typeof this.items[index] === 'undefined') {
             this.items[index] = this.scope.createVariable(this.type.typeOfElements, value);
         }
         let item = this.items[index];
@@ -66,9 +67,9 @@ export class ArrayVariable extends BaseVariable
     {
         let indexExpression = indexRing.evaluatedIndexExpression;
         let index = this.scope.getIntegerValueOfIndexVariable(indexExpression) + this.offset;
-        if (index < 0 || index >= this.arrayLength) {
-            this.scope.addError(ErrorsCodes.indexIsOutOfRange, '', indexRing);
-        } else {
+//        if (index < 0 || index >= this.arrayLength) {
+//            this.scope.addError(ErrorsCodes.indexIsOutOfRange, '', indexRing);
+//        } else {
             if (typeof this.items[index] === 'undefined') {
                  this.items[index] = this.scope.createDefaultVariable(this.type.typeOfElements);
             }
@@ -76,7 +77,7 @@ export class ArrayVariable extends BaseVariable
             return  indexRing.indexRing instanceof IndexRing ?
                     foundItem.getByIndexRing(indexRing.indexRing) :
                     foundItem;
-        }
+//        }
     }
 
     clone()

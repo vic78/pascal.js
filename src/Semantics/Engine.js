@@ -17,6 +17,7 @@ import { IntegerType } from '../SyntaxAnalyzer/Tree/Types/Scalar/IntegerType.js'
 import { CharType } from '../SyntaxAnalyzer/Tree/Types/Scalar/CharType.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
 import { ProcedureType } from '../SyntaxAnalyzer/Tree/Types/ProcedureType.js';
+import { SubprogramType } from '../SyntaxAnalyzer/Tree/Types/SubprogramType.js';
 import { Identifier } from '../SyntaxAnalyzer/Tree/Identifier.js';
 import { Function } from '../SyntaxAnalyzer/Tree/Function.js';
 import { Procedure } from '../SyntaxAnalyzer/Tree/Procedure.js';
@@ -262,8 +263,10 @@ export class Engine
             let currentScope = this.getCurrentScope();
             let name = identifierBranchExpression.symbol.value;
             let result = currentScope.getElementByIdentifier(identifierBranchExpression);
-
-            if (result !== null) {
+//console.log('resutedType', expectedType);
+            if (result !== null &&
+                (expectedType === null ||
+                 currentScope.checkType(expectedType, result.type))) {
                 return result;
             }
             let lowerCaseName = name.toLowerCase();
@@ -325,7 +328,7 @@ export class Engine
             if (Array.isArray(evaluatedParameters)) {
                 evaluatedParametersTypes = evaluatedParameters.map((elem) => elem.type);
             }
-            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParametersTypes);
+            let returnedElem = await this.evaluateIdentifierBranch(identifierBranchExpression.identifierBranch, evaluatedParametersTypes, new SubprogramType);
             let calledElem = returnedElem instanceof CallableVariable ?
                         returnedElem.value :
                         returnedElem;

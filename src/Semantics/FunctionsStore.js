@@ -2,6 +2,7 @@ import { GeneralizedTypeBase } from '../SyntaxAnalyzer/Tree/Types/Generalized/Ge
 import { TypeAsData } from '../SyntaxAnalyzer/Tree/Types/Generalized/TypeAsData.js';
 import { TypeBase } from '../SyntaxAnalyzer/Tree/Types/TypeBase.js';
 import { FunctionType } from '../SyntaxAnalyzer/Tree/Types/FunctionType.js';
+import { SubprogramType } from '../SyntaxAnalyzer/Tree/Types/SubprogramType.js';
 import { UnboundedParametersList } from './Signatures/UnboundedParametersList.js';
 //import { Scope } from './Scope.js';
 
@@ -108,6 +109,7 @@ export class FunctionsStore
                 // и требуется такая фильтрация
                 if (returnType !== null &&
                     expectedType !== null &&
+                    !expectedType instanceof SubprogramType &&
                     !scope.checkType(returnType, expectedType)) {
                     return false;
                 }

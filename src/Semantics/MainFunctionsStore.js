@@ -20,6 +20,8 @@ import { ValCode } from './Procedures/Val/ValCode.js';
 import { StrInt } from './Procedures/Str/StrInt.js';
 import { StrReal } from './Procedures/Str/StrReal.js';
 import { DeleteString } from './Procedures/Delete/DeleteString.js';
+import { IncInteger } from './Procedures/Inc/IncInteger.js';
+import { IncIntegerTwo } from './Procedures/Inc/IncIntegerTwo.js';
 
 export class MainFunctionsStore extends FunctionsStore
 {
@@ -42,6 +44,7 @@ export class MainFunctionsStore extends FunctionsStore
         this.items.val = [ new Val, new ValCode ];
         this.items.str = [ new StrInt, new StrReal ];
         this.items.delete = [ new DeleteString ];
+        this.items.inc = [ new IncIntegerTwo, new IncInteger ];
     }
 
     addFunction(name, procedure)
