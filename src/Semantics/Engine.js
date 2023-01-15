@@ -263,7 +263,7 @@ export class Engine
             let currentScope = this.getCurrentScope();
             let name = identifierBranchExpression.symbol.value;
             let result = currentScope.getElementByIdentifier(identifierBranchExpression);
-//console.log('resutedType', expectedType);
+
             if (result !== null &&
                 (expectedType === null ||
                  currentScope.checkType(expectedType, result.type))) {
