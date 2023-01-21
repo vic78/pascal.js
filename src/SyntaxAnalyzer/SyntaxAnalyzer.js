@@ -81,17 +81,17 @@ export class SyntaxAnalyzer
     anotherSymbolExpected(expectedSymbol)
     {
         let description = this.symbolsDescription.getSymbolTextByCode(expectedSymbol);
-        let errorText = `'${description}' expected but '${this.symbol.stringValue}' found.`;
-        this.lexicalAnalyzer.fileIO.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol.textPosition);
+        let errorText = `'${description}' expected but '${this.symbol === null ? 'end of file' : this.symbol.stringValue}' found.`;
+        this.lexicalAnalyzer.fileIO.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol === null ?
+            this.lexicalAnalyzer.fileIO.getCurrentPosition() :
+            this.symbol.textPosition
+        );
     }
 
     accept(expectedSymbolCode)
     {
-        if (this.symbol === null) {
-            return null;
-        }
-
-        if (this.symbol.symbolCode === expectedSymbolCode) {
+        if (this.symbol !== null &&
+            this.symbol.symbolCode === expectedSymbolCode) {
             this.nextSym();
         } else {
             this.errorDetected = true;
@@ -125,7 +125,8 @@ export class SyntaxAnalyzer
 
     scanBlock()
     {
-        while (this.symbol.symbolCode !== SymbolsCodes.beginSy) {
+        while (this.symbol !== null &&
+               this.symbol.symbolCode !== SymbolsCodes.beginSy) {
             switch (this.symbol.symbolCode) {
                 case SymbolsCodes.constSy:
                     this.constPart();
