@@ -61,6 +61,7 @@ import { RuntimeError } from '../Errors/RuntimeError.js';
 import { ErrorsDescription } from '../Errors/ErrorsDescription.js';
 import { ErrorsCodes } from '../Errors/ErrorsCodes.js';
 import { Break } from  '../SyntaxAnalyzer/Tree/Break.js';
+import { Exit } from  '../SyntaxAnalyzer/Tree/Exit.js';
 import { IndexedIdentifier } from '../SyntaxAnalyzer/Tree/Arrays/IndexedIdentifier.js';
 import { IndexRing } from '../SyntaxAnalyzer/Tree/Arrays/IndexRing.js';
 import { UnboundedParametersList } from '../Semantics/Signatures/UnboundedParametersList.js';
@@ -102,6 +103,9 @@ export class Engine
 
         if (this.tree.sentences) {
             for (let i = 0; i < this.tree.sentences.length; i++) {
+                if (this.tree.exit) {
+                    break;
+                }
                 await this.evaluateSentence(this.tree.sentences[i]);
             }
         }
@@ -408,9 +412,11 @@ export class Engine
                     switch (sourceTypeId) {
                         case TypesIds.REAL:
                         case TypesIds.INTEGER:
+                        case TypesIds.STRING:
+                        case TypesIds.CHAR:
                         break;
                         default:
-                            this.addError(ErrorsCodes.typesMismatch, 'Non-numeric source for assign operator', sentence);
+                            this.addError(ErrorsCodes.typesMismatch, 'Non-numeric value to assign', sentence);
                     }
                     switch (destinationType.typeId) {
                         case TypesIds.REAL:
@@ -419,6 +425,12 @@ export class Engine
                             if (sourceTypeId.typeId === TypesIds.REAL ||
                                 operationSymbolCode === SymbolsCodes.slashAssign) {
                                 this.addError(ErrorsCodes.typesMismatch, 'Cannot assign floating point value to an integer variable', sentence);
+                            }
+                            break;
+                        case TypesIds.STRING:
+                            if (sourceTypeId !== TypesIds.CHAR &&
+                                sourceTypeId !== TypesIds.STRING) {
+                                this.addError(ErrorsCodes.typesMismatch, 'Cannot assign non-character value to a string', sentence);
                             }
                             break;
                         default:
@@ -503,7 +515,8 @@ export class Engine
                 let sentencesNumber = sentences.length;
                 for (let i = 0; i < sentencesNumber; i++) {
                     let result = await this.evaluateSentence(sentences[i]);
-                    if (result instanceof Break) {
+                    if (result instanceof Break ||
+                        result instanceof Exit) {
                         return result;
                     }
                 }
@@ -524,7 +537,8 @@ export class Engine
             currentScope.cycleDepth++;
             while ( ( await this.evaluateExpression(sentence.condition) ).value === true) {
                 let result = await this.evaluateSentence(sentence.body);
-                if (result instanceof Break) {
+                if (result instanceof Break ||
+                    result instanceof Exit) {
                     break;
                 }
             }
@@ -534,7 +548,8 @@ export class Engine
             currentScope.cycleDepth++;
             do {
                 let result = await this.evaluateSentence(sentence.body);
-                if (result instanceof Break) {
+                if (result instanceof Break ||
+                    result instanceof Exit) {
                     break;
                 }
             } while ( ( await this.evaluateExpression(sentence.condition) ).value !== true )
@@ -619,7 +634,8 @@ export class Engine
             let canContinue = true;
             while (comparation(currentValue, lastValue) && canContinue) {
                 let result = await this.evaluateSentence(sentence.body);
-                if (result instanceof Break) {
+                if (result instanceof Break ||
+                    result instanceof Exit) {
                     break;
                 }
                 previousVal.value = currentValue.value;
@@ -663,6 +679,9 @@ export class Engine
             }
         } else if (sentence instanceof Identifier) {
             await this.evaluateIdentifierBranchRunner(sentence);
+        } else if (sentence instanceof Exit) {
+            this.tree.exit = true;
+            return sentence;
         }
     }
 

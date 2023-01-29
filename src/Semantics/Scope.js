@@ -331,7 +331,7 @@ export class Scope
                 } else if (destination instanceof IndexedIdentifier) {
                     let indexRing = destination.indexRing;
                     let destinationType = this.getDestinationType(item.type, indexRing);
-                    if (this.sameType(type, destinationType)) {
+                    if (this.checkType(type, destinationType)) {
 //                        if (variable instanceof ScalarVariable ||
 //                            variable instanceof EnumVariable ||
 //                            variable instanceof CallableVariable) {

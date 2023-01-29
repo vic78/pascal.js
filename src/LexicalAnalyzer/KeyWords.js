@@ -30,6 +30,7 @@ export class KeyWords
             ['real', SymbolsCodes.realSy],
             ['char', SymbolsCodes.charSy],
             ['true', SymbolsCodes.trueSy],
+            ['exit', SymbolsCodes.exitSy],
             ['begin', SymbolsCodes.beginSy],
             ['break', SymbolsCodes.breakSy],
             ['while', SymbolsCodes.whileSy],

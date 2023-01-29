@@ -16,8 +16,12 @@ import { Constant } from './Tree/Constant.js';
 import { Identifier } from './Tree/Identifier.js';
 import { FunctionCall } from './Tree/FunctionCall.js';
 import { ProcedureCall } from './Tree/ProcedureCall.js';
-import { ScalarType } from './Tree/Types/ScalarType.js';
 import { LongIntType } from './Tree/Types/Scalar/LongIntType.js';
+import { CharType } from './Tree/Types/Scalar/CharType.js';
+import { IntegerType } from './Tree/Types/Scalar/IntegerType.js';
+import { StringType } from './Tree/Types/Scalar/StringType.js';
+import { RealType } from './Tree/Types/Scalar/RealType.js';
+import { BooleanType } from './Tree/Types/Scalar/BooleanType.js';
 import { RecordType } from './Tree/Types/RecordType.js';
 import { AppliedNamedType } from './Tree/Types/AppliedNamedType.js';
 import { VariablesDeclaration } from './Tree/VariablesDeclaration.js';
@@ -58,6 +62,7 @@ import { ForCycle } from './Tree/Loops/ForCycle.js';
 import { NmbInt } from './../LexicalAnalyzer/Symbols/NmbInt.js';
 import { Symbol } from './../LexicalAnalyzer/Symbols/Symbol.js';
 import { Break } from './Tree/Break.js';
+import { Exit } from './Tree/Exit.js';
 
 
 export class SyntaxAnalyzer
@@ -279,25 +284,18 @@ export class SyntaxAnalyzer
 
             switch (typeSymbol.symbolCode) {
                 case SymbolsCodes.charSy:
-                    typeId = TypesIds.CHAR;
-                    break;
+                    return new CharType(typeSymbol);
                 case SymbolsCodes.integerSy:
-                    typeId = TypesIds.INTEGER;
-                    break;
+                    return new IntegerType(typeSymbol);
                 case SymbolsCodes.stringSy:
-                    typeId = TypesIds.STRING;
-                    break;
+                    return new StringType(typeSymbol);
                 case SymbolsCodes.realSy:
-                    typeId = TypesIds.REAL;
-                    break;
+                    return new RealType(typeSymbol);
                 case SymbolsCodes.booleanSy:
-                    typeId = TypesIds.BOOLEAN;
-                    break;
+                    return new BooleanType(typeSymbol);
                 case SymbolsCodes.longintSy:
                     return new LongIntType(typeSymbol);
             }
-
-            return new ScalarType(typeSymbol, typeId);
         } else if (this.symbol.symbolCode === SymbolsCodes.ident) {
             typeSymbol = this.symbol;
             this.nextSym();
@@ -604,6 +602,10 @@ export class SyntaxAnalyzer
             let breakSymbol = this.symbol;
             this.nextSym();
             return new Break(breakSymbol);
+        } else if (this.symbol.symbolCode === SymbolsCodes.exitSy) {
+            let exitSymbol = this.symbol;
+            this.nextSym();
+            return new Exit(exitSymbol);
         } else if (this.symbol.symbolCode === SymbolsCodes.caseSy) {
             let caseSymbol = this.symbol;
             this.nextSym();

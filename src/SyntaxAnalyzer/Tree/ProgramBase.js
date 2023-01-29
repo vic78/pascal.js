@@ -13,6 +13,7 @@ export class ProgramBase extends TreeNodeBase
         this.types = [];
         this.constants = [];
         this.parentFunction = parentFunction;
+        this.exit = false;
     }
 
     getType()

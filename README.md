@@ -1,20 +1,20 @@
-# pascal.js -- pascal interpreter in javascript
+# pascal.js -- pascal interpreter written in javascript
 
 ## Разработка
 
-Устанавливаем зависимости:
+Install dependencies:
 
 ```shell
 npm ci
 ```
 
-Запуск:
+Run in console:
 
 ```shell
 node run.js
 ```
 
-Запуск всех тестов:
+Run all tests:
 
 ```shell
 npm test
@@ -35,17 +35,3 @@ npm test
 * **Движок** `Engine` -- выполняет дерево, полученное из `SyntaxAnalyzer`, это и есть процесс выполнения программы.
 
 Можно сравнить эту структуру интерпретатора с возможной структурой компилятора: http://fkn.ktu10.com/?q=node/12395
-
-
-### SyntaxAnalyzer
-
-ДАС - дерево абстрактного синтаксиса, структура, которая строится СА на основе исходной программы,
-потом это структуру будет выполнять Движок `Engine`.
-
-* `SyntaxAnalyzer/Tree/` - директория хранит описания типов узлов для ДАС
-
-
-## TODO
-
-Несрочно:
-* "Index is out of range" -- добавить подробности - какой именно индекс и в каком диапазоне

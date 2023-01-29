@@ -1,5 +1,11 @@
 {
     "name": "pascal.js",
+    "description": "Pascal interpreter",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/monatheoctocat/my_package.git"
+    },
     "description": "pascal interpreter in javascript",
     "main": "./src/pascal.js",
     "type": "module",
