@@ -605,7 +605,15 @@ export class SyntaxAnalyzer
         } else if (this.symbol.symbolCode === SymbolsCodes.exitSy) {
             let exitSymbol = this.symbol;
             this.nextSym();
-            return new Exit(exitSymbol);
+            let exitExpression = null;
+            if (this.symbol.symbolCode === SymbolsCodes.leftPar) {
+                this.nextSym();
+                if (this.symbol.symbolCode !== SymbolsCodes.rightPar) {
+                    exitExpression = this.scanExpression();
+                }
+                this.accept(SymbolsCodes.rightPar);
+            }
+            return new Exit(exitSymbol, exitExpression);
         } else if (this.symbol.symbolCode === SymbolsCodes.caseSy) {
             let caseSymbol = this.symbol;
             this.nextSym();

@@ -292,7 +292,7 @@ export class Scope
      */
     setVariableValue(destination, variable, treeNode = null)
     {
-        let type = variable.getType();
+        let type = variable.type;
         let identifier = null;
 
         if (destination instanceof Identifier) {
@@ -313,7 +313,7 @@ export class Scope
                 destination instanceof Identifier ||
                 item instanceof RecordVariable ) {
 
-                if (this.typeIncluded(item.getType(), type)) {
+                if (this.typeIncluded(item.type, type)) {
                 } else {
                     this.addTypeMismatchError(type, item, treeNode);
                 }

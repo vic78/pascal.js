@@ -104,6 +104,7 @@ export class Engine
         if (this.tree.sentences) {
             for (let i = 0; i < this.tree.sentences.length; i++) {
                 if (this.tree.exit) {
+                    this.tree.exit = false;
                     break;
                 }
                 await this.evaluateSentence(this.tree.sentences[i]);
@@ -681,6 +682,19 @@ export class Engine
             await this.evaluateIdentifierBranchRunner(sentence);
         } else if (sentence instanceof Exit) {
             this.tree.exit = true;
+            let exitExpression = sentence.exitExpression;
+
+            if (exitExpression !== null) {
+                if (this.tree instanceof Function) {
+                    let expressionValue = await this.evaluateExpression(exitExpression);
+                    let functionIdentifier = this.tree.name;
+                    let currentScope = this.getCurrentScope();
+                    currentScope.setVariableValue(functionIdentifier, expressionValue, exitExpression);
+                } else if (this.tree instanceof Procedure) {
+                    this.addError(ErrorsCodes.typesMismatch, `Procedure cannot return a value`, exitExpression);
+                }
+            }
+
             return sentence;
         }
     }
