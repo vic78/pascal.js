@@ -103,6 +103,8 @@ export class SyntaxAnalyzer
             this.anotherSymbolExpected(expectedSymbolCode);
             this.goToEnd();
         }
+
+        return true;
     }
 
     analyze()
@@ -149,7 +151,7 @@ export class SyntaxAnalyzer
                     this.scanFunction();
                     break;
                 default:
-                    let errorText = `Symbol 'begin' expecsted but '${this.symbol.stringValue}' found.`;
+                    let errorText = `Symbol 'begin' expected but '${this.symbol.stringValue}' found.`;
                     this.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol);
             }
         }
@@ -275,7 +277,6 @@ export class SyntaxAnalyzer
             this.symbol.symbolCode === SymbolsCodes.longintSy ||
             this.symbol.symbolCode === SymbolsCodes.booleanSy ||
             this.symbol.symbolCode === SymbolsCodes.realSy ||
-            this.symbol.symbolCode === SymbolsCodes.stringSy ||
             this.symbol.symbolCode === SymbolsCodes.charSy) {
 
             typeSymbol = this.symbol;
@@ -287,8 +288,6 @@ export class SyntaxAnalyzer
                     return new CharType(typeSymbol);
                 case SymbolsCodes.integerSy:
                     return new IntegerType(typeSymbol);
-                case SymbolsCodes.stringSy:
-                    return new StringType(typeSymbol);
                 case SymbolsCodes.realSy:
                     return new RealType(typeSymbol);
                 case SymbolsCodes.booleanSy:
@@ -296,6 +295,25 @@ export class SyntaxAnalyzer
                 case SymbolsCodes.longintSy:
                     return new LongIntType(typeSymbol);
             }
+        } else if (this.symbol.symbolCode === SymbolsCodes.stringSy) {
+            typeSymbol = this.symbol;
+            this.nextSym();
+            let lengthSymbol = null;
+            if (this.symbol.symbolCode === SymbolsCodes.lBracket) {
+                this.nextSym();
+                if (this.symbol.symbolCode === SymbolsCodes.ident) {
+                    lengthSymbol = new Identifier(this.symbol);
+                } else if (this.symbol.symbolCode === SymbolsCodes.intC) {
+                    lengthSymbol = new Constant(this.symbol);
+                } else {
+                    let errorText = `Integer constant or identifier expected but '${this.symbol.stringValue}' found.`;
+                    this.addError(ErrorsCodes.inadmissibleSymbol, errorText, this.symbol);
+                }
+                this.nextSym();
+                this.accept(SymbolsCodes.rBracket);
+            }
+
+            return new StringType(typeSymbol, TypesIds.STRING, lengthSymbol);
         } else if (this.symbol.symbolCode === SymbolsCodes.ident) {
             typeSymbol = this.symbol;
             this.nextSym();
@@ -508,9 +526,23 @@ export class SyntaxAnalyzer
     /** Синтаксическая диаграмма "оператор" */
     scanSentence()
     {
+        let withPrefix = [];
+        if (this.symbol.symbolCode === SymbolsCodes.withSy) {
+           this.nextSym();
+           do {
+                if (this.symbol.symbolCode === SymbolsCodes.comma &&
+                    withPrefix.length > 0) {
+                    this.accept(SymbolsCodes.comma);
+                }
+                withPrefix.push(this.symbol);
+                this.accept(SymbolsCodes.ident);
+           } while (this.symbol.symbolCode === SymbolsCodes.comma)
+           this.accept(SymbolsCodes.doSy);
+        }
+
         // Имя переменной, функции или процедуры
         if (this.symbol.symbolCode === SymbolsCodes.ident) {
-            let identifierBranch = this.scanIdentifierBranch();
+            let identifierBranch = this.scanIdentifierBranch(null, withPrefix);
 
             if (this.symbol.symbolCode === SymbolsCodes.assign ||
                 this.symbol.symbolCode === SymbolsCodes.plusAssign ||
@@ -520,7 +552,7 @@ export class SyntaxAnalyzer
                     ) {
                 let assignSymbol = this.symbol;
                 this.nextSym();
-                return new Assignation(assignSymbol, identifierBranch, this.scanExpression());
+                return new Assignation(assignSymbol, identifierBranch, this.scanExpression(), withPrefix);
             } else {
                 return identifierBranch;
             }
@@ -710,7 +742,7 @@ export class SyntaxAnalyzer
     }
 
     /** Синтаксическая диаграмма "переменная" */
-    scanIdentifierBranch(inputExpression = null)
+    scanIdentifierBranch(inputExpression = null, withPrefix = [])
     {
         let baseExpression = null;
         if (inputExpression === null) {

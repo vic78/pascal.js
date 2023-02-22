@@ -1,10 +1,10 @@
-import { TreeNodeBase } from './TreeNodeBase.js';
+import { Operator } from './Operator/Operator.js';
 
-export class Implication extends TreeNodeBase
+export class Implication extends Operator
 {
-    constructor(symbol, condition, left, right)
+    constructor(symbol, condition, left, right, withPrefix = [])
     {
-        super(symbol);
+        super(symbol, withPrefix);
         this.condition = condition;
         this.left = left;
         this.right = right;
