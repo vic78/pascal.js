@@ -61,6 +61,7 @@ export class SymbolsDescription
             [SymbolsCodes.charSy, 'char'],
             [SymbolsCodes.exitSy, 'exit'],
             [SymbolsCodes.beginSy, 'begin'],
+            [SymbolsCodes.classSy, 'class'],
             [SymbolsCodes.whileSy, 'while'],
             [SymbolsCodes.arraySy, 'array'],
             [SymbolsCodes.constSy, 'const'],

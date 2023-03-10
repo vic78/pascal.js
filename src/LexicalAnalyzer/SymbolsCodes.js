@@ -77,5 +77,6 @@ export const SymbolsCodes = {
     plusAssign      :141,
     minusAssign     :142,
     slashAssign     :143,
-    starAssign      :144
+    starAssign      :144,
+    classSy         :145
 };

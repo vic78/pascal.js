@@ -11,5 +11,6 @@ export const TypesIds = {
     APPLIED_NAMED: 9,
     PROCEDURE: 10,
     FUNCTION: 11,
-    TYPE: 12
+    TYPE: 12,
+    CLASS: 13
 };

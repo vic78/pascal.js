@@ -389,6 +389,42 @@ export class SyntaxAnalyzer
 
             return new RecordType(recordSymbol, recordElems);
 
+        } else if (this.symbol.symbolCode === SymbolsCodes.classSy) {
+            let recordSymbol = this.symbol;
+            this.nextSym();
+
+            do {
+                if (recordElems.length > 0) {
+                    if (this.symbol.symbolCode === SymbolsCodes.semicolon ) {
+                        this.nextSym();
+                    }
+                    if (this.symbol.symbolCode === SymbolsCodes.endSy) {
+                        break;
+                    }
+                }
+
+                let parameters = new TypeApplied(this.symbol);
+
+                let identifiers = [];
+
+                do {
+                    if (identifiers.length > 0 &&
+                        this.symbol.symbolCode === SymbolsCodes.comma) {
+                        this.nextSym();
+                    }
+
+                    identifiers.push(new Identifier(this.symbol));
+                    this.accept(SymbolsCodes.ident);
+
+                } while (this.symbol.symbolCode === SymbolsCodes.comma)
+
+                this.accept(SymbolsCodes.colon);
+                parameters.identifiers = identifiers;
+                parameters.type = this.scanType();
+
+                recordElems.push(parameters);
+
+            let classElems = [];
         }
     }
 
